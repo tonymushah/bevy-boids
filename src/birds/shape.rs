@@ -5,6 +5,6 @@ pub fn bird_meshes() -> Mesh {
     tetra
         .vertices
         .iter_mut()
-        .for_each(|vertice| *vertice *= 1.25_f32);
+        .for_each(|vertice| *vertice *= 0.25_f32);
     tetra.into()
 }

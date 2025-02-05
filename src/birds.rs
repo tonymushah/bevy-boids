@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::velocity::{ShowVelocityVector, Velocity};
+
 pub mod shape;
 
 #[derive(Component)]
@@ -19,6 +21,8 @@ fn setup(
             base_color: Color::Srgba(Srgba::hex("#ffa0d1").unwrap()),
             ..Default::default()
         })),
+        Velocity(Vec3::Z * 1.25),
+        ShowVelocityVector,
     ));
 }
 
