@@ -3,10 +3,11 @@ use bevy::prelude::*;
 use crate::velocity::{ShowVelocityVector, Velocity};
 
 pub mod look_to;
+pub mod random_vel;
 pub mod shape;
 
 #[derive(Component)]
-#[require(Mesh3d)]
+#[require(Mesh3d, Velocity)]
 pub struct Bird;
 
 fn setup(
@@ -32,6 +33,7 @@ pub struct BirdsPlugin;
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, look_to::look_to);
+            .add_systems(Update, look_to::look_to)
+            .add_plugins(random_vel::BirdsRandomVelPlugin);
     }
 }
