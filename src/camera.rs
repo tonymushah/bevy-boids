@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
+
 #[derive(Component)]
 #[require(Camera3d)]
 pub struct MainCamera;
@@ -16,6 +18,7 @@ fn setup_camera(mut commands: Commands) {
             z: 12.0,
         })
         .looking_at(Vec3::ZERO, Vec3::Y),
+        PanOrbitCamera::default(),
     ));
 }
 
@@ -29,6 +32,7 @@ pub struct MainCameraPluginGroup;
 
 impl Plugin for MainCameraPluginGroup {
     fn build(&self, app: &mut App) {
-        app.add_plugins(MainCameraPlugin);
+        app.add_plugins(MainCameraPlugin)
+            .add_plugins(PanOrbitCameraPlugin);
     }
 }
