@@ -6,9 +6,9 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands.spawn((
-        Mesh3d(meshes.add(Plane3d::new(Vec3::Y, Vec2::new(10.0, 10.0)))),
+        Mesh3d(meshes.add(Cuboid::new(20.0, 20.0, 20.0))),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::Srgba(Srgba::hex("#d8fead90").unwrap()),
+            base_color: Color::Srgba(Srgba::hex("#d8fead10").unwrap()),
             ..Default::default()
         })),
     ));
@@ -18,7 +18,7 @@ fn setup(
             range: 30.0,
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(10.0, 5.0, -5.0)),
+        Transform::from_translation(Vec3::new(7.0, 7.0, -5.0)),
     ));
 }
 
