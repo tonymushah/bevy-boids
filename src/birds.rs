@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::velocity::{ShowVelocityVector, Velocity};
 
+pub mod look_to;
 pub mod shape;
 
 #[derive(Component)]
@@ -30,6 +31,7 @@ pub struct BirdsPlugin;
 
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
+        app.add_systems(Startup, setup)
+            .add_systems(Update, look_to::look_to);
     }
 }
