@@ -1,7 +1,4 @@
-use bevy::{app::PluginGroupBuilder, prelude::*};
-use pan::{PanOrbitCamera, PanOrbitCameraPlugin};
-
-pub mod pan;
+use bevy::prelude::*;
 
 #[derive(Component)]
 #[require(Camera3d)]
@@ -12,7 +9,7 @@ pub struct MainCameraPlugin;
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
         MainCamera,
-        PanOrbitCamera,
+        // PanOrbitCamera,
         Transform::from_translation(Vec3 {
             x: 10.0,
             y: 10.0,
@@ -30,10 +27,8 @@ impl Plugin for MainCameraPlugin {
 
 pub struct MainCameraPluginGroup;
 
-impl PluginGroup for MainCameraPluginGroup {
-    fn build(self) -> bevy::app::PluginGroupBuilder {
-        PluginGroupBuilder::start::<Self>()
-            .add(MainCameraPlugin)
-            .add(PanOrbitCameraPlugin)
+impl Plugin for MainCameraPluginGroup {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(MainCameraPlugin);
     }
 }

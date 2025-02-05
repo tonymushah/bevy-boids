@@ -14,8 +14,8 @@ fn setup(
     ));
     commands.spawn((
         PointLight {
-            intensity: 10_000.0,
             color: Color::Srgba(Srgba::hex("#f0fdf5").unwrap()),
+            range: 30.0,
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(10.0, 5.0, -5.0)),
