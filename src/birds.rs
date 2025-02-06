@@ -1,6 +1,8 @@
-use alignment::BirdAlignmentPlugin;
 use bevy::prelude::*;
 use rand::{rng, Rng};
+
+use alignment::BirdAlignmentPlugin;
+use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
 
 use crate::{
@@ -10,6 +12,7 @@ use crate::{
 };
 
 pub mod alignment;
+pub mod cohesion;
 pub mod cube_bound;
 pub mod look_to;
 pub mod random_vel;
@@ -18,8 +21,9 @@ pub mod shape;
 
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
-        min_distance: 1.5,
-        neighboor_radius: 4.0,
+        min_distance: 5.0,
+        neighboor_radius: 7.0,
+        cohesion_radius: (15.0, 25.0),
     }
 }
 
@@ -79,6 +83,7 @@ impl Plugin for BirdsPlugin {
             )
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
             .add_plugins(BirdSeparationPlugin)
-            .add_plugins(BirdAlignmentPlugin);
+            .add_plugins(BirdAlignmentPlugin)
+            .add_plugins(BirdCohesionPlugin);
     }
 }

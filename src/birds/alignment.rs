@@ -5,7 +5,7 @@ use crate::{velocity::Velocity, vision_radius::VisionRadius};
 use super::Bird;
 
 #[allow(clippy::type_complexity)]
-fn align(
+pub fn align(
     mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity), With<Bird>>,
     time: Res<Time>,
     mut gizmos: Gizmos,
