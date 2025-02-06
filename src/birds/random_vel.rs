@@ -7,7 +7,7 @@ use super::Bird;
 
 fn random(mut birds: Query<&mut Velocity, With<Bird>>) {
     for mut vel in &mut birds {
-        **vel = random_translation_uniform(&mut rng(), -3.0..=3.0);
+        **vel = random_translation_uniform(&mut rng(), -4.0..=5.0);
     }
 }
 
