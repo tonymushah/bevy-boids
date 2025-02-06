@@ -7,6 +7,7 @@ use velocity::VelocityPlugin;
 pub mod birds;
 pub mod camera;
 pub mod env;
+pub mod utils;
 pub mod velocity;
 
 fn main() {

@@ -22,11 +22,12 @@ fn _move(mut has_velocities: Query<(&mut Transform, &Velocity)>, time: Res<Time>
 fn draw_arrow(
     has_velocities: Query<(&Transform, &Velocity), With<ShowVelocityVector>>,
     mut gizmos: Gizmos,
+    time: Res<Time>,
 ) {
     for (transform, velocity) in has_velocities.iter() {
         gizmos.arrow(
             transform.translation,
-            transform.translation + velocity.0,
+            transform.translation + velocity.0 * time.delta_secs(),
             Color::Srgba(Srgba::BLUE),
         );
     }
