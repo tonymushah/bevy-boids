@@ -7,7 +7,7 @@ use crate::{velocity::Velocity, vision_radius::VisionRadius};
 
 use super::Bird;
 
-const SIZE: usize = 3;
+const SIZE: usize = 2;
 
 #[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
 pub struct ShowCohesionForceGizmo(pub bool);
