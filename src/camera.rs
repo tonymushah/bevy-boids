@@ -13,9 +13,9 @@ fn setup_camera(mut commands: Commands) {
         MainCamera,
         // PanOrbitCamera,
         Transform::from_translation(Vec3 {
-            x: 50.0,
-            y: 50.0,
-            z: 12.0,
+            x: 65.0,
+            y: 44.0,
+            z: 52.0,
         })
         .looking_at(Vec3::ZERO, Vec3::Y),
         PanOrbitCamera::default(),
