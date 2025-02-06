@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css::RED, prelude::*};
 
 use crate::{velocity::Velocity, vision_radius::VisionRadius};
 
@@ -8,6 +8,7 @@ use super::Bird;
 fn separate(
     mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity), With<Bird>>,
     time: Res<Time>,
+    mut gizmos: Gizmos,
 ) {
     let mut combinaisons = birds.iter_combinations_mut();
     while let Some([mut one, two]) = combinaisons.fetch_next() {
@@ -26,6 +27,12 @@ fn separate(
         let force_magnitude = (min_distance - distance).powi(2);
 
         let separation_force = pos_vec.normalize() * force_magnitude;
+
+        gizmos.arrow(
+            one.1.translation,
+            one.1.translation + separation_force.normalize(),
+            RED,
+        );
 
         **one.0 += separation_force;
     }

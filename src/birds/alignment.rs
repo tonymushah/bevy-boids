@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css::GREEN, prelude::*};
 
 use crate::{velocity::Velocity, vision_radius::VisionRadius};
 
@@ -8,6 +8,7 @@ use super::Bird;
 fn align(
     mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity), With<Bird>>,
     time: Res<Time>,
+    mut gizmos: Gizmos,
 ) {
     let mut combinaisons = birds.iter_combinations_mut();
     while let Some([mut one, two]) = combinaisons.fetch_next() {
@@ -23,6 +24,12 @@ fn align(
         }
 
         let average_vel = (**one.0 + **two.0) / 2.0;
+
+        gizmos.arrow(
+            one.1.translation,
+            one.1.translation + average_vel.normalize(),
+            GREEN,
+        );
 
         **one.0 += average_vel.normalize();
     }
