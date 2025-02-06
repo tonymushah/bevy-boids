@@ -12,8 +12,12 @@ pub mod look_to;
 pub mod random_vel;
 pub mod shape;
 
+fn default_vision_radius() -> VisionRadius {
+    VisionRadius(1.5)
+}
+
 #[derive(Component)]
-#[require(Mesh3d, Velocity, VisionRadius)]
+#[require(Mesh3d, Velocity, VisionRadius(default_vision_radius))]
 pub struct Bird;
 
 fn spawns(
@@ -33,7 +37,6 @@ fn spawns(
             })),
             Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
             ShowVelocityVector,
-            VisionRadius(1.5),
         ));
     }
 }
