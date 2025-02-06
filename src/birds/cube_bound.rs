@@ -13,6 +13,7 @@ pub struct ActualCube;
 
 const MIN_SIZE: f32 = 20.0;
 
+#[allow(clippy::type_complexity)]
 fn flip_bird_transform(
     mut birds: Query<(&mut Transform, &Velocity), (With<Bird>, Without<ActualCube>)>,
     bound: Res<CubeBound>,
