@@ -58,7 +58,7 @@ impl Plugin for BirdsPlugin {
             .add_systems(Update, look_to::look_to)
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
-                29.0, 29.0, 29.0,
+                49.0, 49.0, 49.0,
             )))
             .add_systems(Update, spawns.run_if(spawn_by_key_condition))
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition));
