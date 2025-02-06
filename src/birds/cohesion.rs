@@ -7,7 +7,10 @@ use crate::{velocity::Velocity, vision_radius::VisionRadius};
 
 use super::Bird;
 
-const SIZE: usize = 5;
+const SIZE: usize = 2;
+
+#[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
+pub struct ShowCohesionForceGizmo(pub bool);
 
 #[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
 pub struct IsCohersionActive(pub bool);
@@ -21,26 +24,15 @@ pub fn cohesion(
     time: Res<Time>,
     mut gizmos: Gizmos,
     mut timer: ResMut<CohesionTimer>,
+    show_gizmo: Res<ShowCohesionForceGizmo>,
 ) {
-    let mut combinaisons = birds.iter_combinations_mut::<SIZE>();
-    while let Some(mut to_cohese) = combinaisons.fetch_next() {
-        if timer.tick(time.delta()).just_finished() {
+    if timer.tick(time.delta()).just_finished() {
+        let mut combinaisons = birds.iter_combinations_mut::<SIZE>();
+        while let Some(mut to_cohese) = combinaisons.fetch_next() {
             let to_use = rng().random_range(0..(SIZE as u32)) as usize;
             let center = {
                 let points = to_cohese
                     .iter()
-                    .filter(|b| {
-                        let bird = &to_cohese[to_use];
-                        let next_one = bird.1.translation + **bird.0 * time.delta_secs();
-                        let next_two = b.1.translation + **b.0 * time.delta_secs();
-
-                        let min = bird.2.cohesion_radius.0;
-                        let max = bird.2.cohesion_radius.1;
-
-                        let distance = next_one.distance(next_two);
-
-                        min < distance && distance < max
-                    })
                     .map(|(_, t, _, _)| t.translation)
                     .collect::<Vec<_>>();
                 points.iter().sum::<Vec3>() / points.len() as f32
@@ -56,13 +48,16 @@ pub fn cohesion(
             }
             let pos_vec = bird.1.translation - center;
 
-            let center_force = 0.125 * pos_vec.normalize();
+            let center_force =
+                (1.0 / rng().random_range::<i32, _>(10..100) as f32) * pos_vec.normalize();
 
-            gizmos.arrow(
-                bird.1.translation,
-                bird.1.translation - center_force.normalize(),
-                PURPLE,
-            );
+            if **show_gizmo {
+                gizmos.arrow(
+                    bird.1.translation,
+                    bird.1.translation - center_force.normalize(),
+                    PURPLE,
+                );
+            }
 
             **bird.0 -= center_force;
         }
@@ -89,6 +84,14 @@ pub fn is_cohesion_active(res: Res<IsCohersionActive>) -> bool {
     **res
 }
 
+fn toggle_gizmos(mut show_gizmo: ResMut<ShowCohesionForceGizmo>) {
+    **show_gizmo = !**show_gizmo;
+}
+
+fn toogle_gismo_condition(key: Res<ButtonInput<KeyCode>>) -> bool {
+    key.all_just_pressed([KeyCode::KeyC, KeyCode::AltLeft])
+}
+
 pub struct BirdCohesionPlugin;
 
 impl Plugin for BirdCohesionPlugin {
@@ -102,8 +105,10 @@ impl Plugin for BirdCohesionPlugin {
             )
             .insert_resource(IsCohersionActive(true))
             .insert_resource(CohesionTimer(Timer::new(
-                Duration::from_millis(500 * SIZE as u64),
+                Duration::from_millis(100 * SIZE as u64),
                 TimerMode::Repeating,
-            )));
+            )))
+            .insert_resource(ShowCohesionForceGizmo(true))
+            .add_systems(Update, toggle_gizmos.run_if(toogle_gismo_condition));
     }
 }
