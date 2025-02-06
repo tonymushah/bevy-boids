@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use rand::{rng, Rng};
+use separation::BirdSeparationPlugin;
 
 use crate::{
     utils::random_translation_uniform,
-    velocity::{is_paused, ShowVelocityVector, Velocity},
+    velocity::{is_paused, MaxSpeed, ShowVelocityVector, Velocity},
     vision_radius::VisionRadius,
 };
 
 pub mod cube_bound;
 pub mod look_to;
 pub mod random_vel;
+pub mod separation;
 pub mod shape;
 
 fn default_vision_radius() -> VisionRadius {
@@ -37,6 +39,7 @@ fn spawns(
             })),
             Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
             ShowVelocityVector,
+            MaxSpeed(_rng.random_range(6.0..=12.0)),
         ));
     }
 }
@@ -69,6 +72,7 @@ impl Plugin for BirdsPlugin {
                 Update,
                 spawns.run_if(spawn_by_key_condition.and(not(is_paused))),
             )
-            .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition));
+            .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
+            .add_plugins(BirdSeparationPlugin);
     }
 }
