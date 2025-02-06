@@ -3,7 +3,7 @@ use rand::{rng, Rng};
 
 use crate::{
     utils::random_translation_uniform,
-    velocity::{ShowVelocityVector, Velocity},
+    velocity::{is_paused, ShowVelocityVector, Velocity},
 };
 
 pub mod cube_bound;
@@ -55,12 +55,15 @@ pub struct BirdsPlugin;
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawns)
-            .add_systems(Update, look_to::look_to)
+            .add_systems(Update, look_to::look_to.run_if(not(is_paused)))
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
                 49.0, 49.0, 49.0,
             )))
-            .add_systems(Update, spawns.run_if(spawn_by_key_condition))
+            .add_systems(
+                Update,
+                spawns.run_if(spawn_by_key_condition.and(not(is_paused))),
+            )
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition));
     }
 }

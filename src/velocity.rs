@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Resource, Default, Deref, DerefMut)]
-struct IsPaused(bool);
+pub struct IsPaused(bool);
 
 #[derive(Debug, Deref, DerefMut, Default, Component)]
 struct PausedVelocityState(Vec3);
@@ -26,7 +26,10 @@ fn draw_arrow(
     for (transform, velocity) in has_velocities.iter() {
         gizmos.arrow(
             transform.translation,
-            transform.translation + velocity.0,
+            transform.translation
+                + velocity
+                    .0
+                    .clamp(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0)),
             Color::Srgba(Srgba::BLUE),
         );
     }
@@ -49,6 +52,10 @@ fn handle_pause(
             **paused_state = Vec3::ZERO;
         }
     }
+}
+
+pub fn is_paused(is_paused: Res<IsPaused>) -> bool {
+    **is_paused
 }
 
 fn pause_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
