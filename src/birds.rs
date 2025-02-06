@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::velocity::{ShowVelocityVector, Velocity};
 
+pub mod cube_bound;
 pub mod look_to;
 pub mod random_vel;
 pub mod shape;
@@ -34,6 +35,9 @@ impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
             .add_systems(Update, look_to::look_to)
-            .add_plugins(random_vel::BirdsRandomVelPlugin);
+            .add_plugins(random_vel::BirdsRandomVelPlugin)
+            .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
+                30.0, 30.0, 30.0,
+            )));
     }
 }
