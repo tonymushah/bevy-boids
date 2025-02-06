@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use birds_number::BirdNumberTextPlugin;
 use rand::{rng, Rng};
 
 use alignment::BirdAlignmentPlugin;
@@ -12,6 +13,7 @@ use crate::{
 };
 
 pub mod alignment;
+pub mod birds_number;
 pub mod cohesion;
 pub mod cube_bound;
 pub mod look_to;
@@ -84,6 +86,7 @@ impl Plugin for BirdsPlugin {
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
             .add_plugins(BirdSeparationPlugin)
             .add_plugins(BirdAlignmentPlugin)
-            .add_plugins(BirdCohesionPlugin);
+            .add_plugins(BirdCohesionPlugin)
+            .add_plugins(BirdNumberTextPlugin);
     }
 }
