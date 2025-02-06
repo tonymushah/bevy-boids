@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 
+#[derive(Debug, Clone, Copy, DerefMut, Deref, Default, Component)]
+pub struct MaxSpeed(pub f32);
+
 #[derive(Resource, Default, Deref, DerefMut)]
 pub struct IsPaused(bool);
 
 #[derive(Debug, Deref, DerefMut, Default, Component)]
 struct PausedVelocityState(Vec3);
 
-#[derive(Debug, Deref, DerefMut, Default, Component)]
+#[derive(Debug, Deref, DerefMut, Default, Component, Clone, Copy)]
 #[require(PausedVelocityState)]
 pub struct Velocity(pub Vec3);
 
@@ -62,6 +65,14 @@ fn pause_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
     keys.just_pressed(KeyCode::Enter)
 }
 
+fn handle_max_speed(mut max_speed_queries: Query<(&mut Velocity, &MaxSpeed)>) {
+    for (mut vel, max_speed) in &mut max_speed_queries {
+        if (*vel).length() > **max_speed {
+            **vel = vel.normalize() * **max_speed;
+        }
+    }
+}
+
 pub struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
@@ -71,6 +82,7 @@ impl Plugin for VelocityPlugin {
             .add_systems(
                 Update,
                 (toggle_pause, handle_pause).chain().run_if(pause_condition),
-            );
+            )
+            .add_systems(Update, handle_max_speed);
     }
 }
