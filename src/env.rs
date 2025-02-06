@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::birds::cube_bound::ActualCube;
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -12,6 +14,7 @@ fn setup(
             alpha_mode: AlphaMode::Add,
             ..Default::default()
         })),
+        ActualCube,
     ));
 
     commands.spawn(PointLight {

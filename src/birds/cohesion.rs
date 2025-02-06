@@ -7,7 +7,7 @@ use crate::{velocity::Velocity, vision_radius::VisionRadius};
 
 use super::Bird;
 
-const SIZE: usize = 2;
+const SIZE: usize = 3;
 
 #[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
 pub struct ShowCohesionForceGizmo(pub bool);
@@ -89,7 +89,7 @@ fn toggle_gizmos(mut show_gizmo: ResMut<ShowCohesionForceGizmo>) {
 }
 
 fn toogle_gismo_condition(key: Res<ButtonInput<KeyCode>>) -> bool {
-    key.all_just_pressed([KeyCode::KeyC, KeyCode::AltLeft])
+    key.all_just_pressed([KeyCode::F1])
 }
 
 pub struct BirdCohesionPlugin;
