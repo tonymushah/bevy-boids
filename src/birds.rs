@@ -1,3 +1,4 @@
+use alignment::BirdAlignmentPlugin;
 use bevy::prelude::*;
 use rand::{rng, Rng};
 use separation::BirdSeparationPlugin;
@@ -8,6 +9,7 @@ use crate::{
     vision_radius::VisionRadius,
 };
 
+pub mod alignment;
 pub mod cube_bound;
 pub mod look_to;
 pub mod random_vel;
@@ -76,6 +78,7 @@ impl Plugin for BirdsPlugin {
                 spawns.run_if(spawn_by_key_condition.and(not(is_paused))),
             )
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
-            .add_plugins(BirdSeparationPlugin);
+            .add_plugins(BirdSeparationPlugin)
+            .add_plugins(BirdAlignmentPlugin);
     }
 }
