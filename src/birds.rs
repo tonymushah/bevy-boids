@@ -15,7 +15,10 @@ pub mod separation;
 pub mod shape;
 
 fn default_vision_radius() -> VisionRadius {
-    VisionRadius(1.5)
+    VisionRadius {
+        min_distance: 1.5,
+        neighboor_radius: 4.0,
+    }
 }
 
 #[derive(Component)]

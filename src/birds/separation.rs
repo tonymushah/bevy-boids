@@ -14,7 +14,7 @@ fn separate(
         let next_one = one.1.translation + **one.0 * time.delta_secs();
         let next_two = two.1.translation + **two.0 * time.delta_secs();
 
-        let min_distance = **one.2;
+        let min_distance = one.2.min_distance;
         let distance = next_one.distance(next_two);
 
         if distance > min_distance {
