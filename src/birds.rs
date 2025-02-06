@@ -4,6 +4,7 @@ use rand::{rng, Rng};
 use crate::{
     utils::random_translation_uniform,
     velocity::{is_paused, ShowVelocityVector, Velocity},
+    vision_radius::VisionRadius,
 };
 
 pub mod cube_bound;
@@ -12,7 +13,7 @@ pub mod random_vel;
 pub mod shape;
 
 #[derive(Component)]
-#[require(Mesh3d, Velocity)]
+#[require(Mesh3d, Velocity, VisionRadius)]
 pub struct Bird;
 
 fn spawns(
@@ -32,6 +33,7 @@ fn spawns(
             })),
             Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
             ShowVelocityVector,
+            VisionRadius(1.5),
         ));
     }
 }
