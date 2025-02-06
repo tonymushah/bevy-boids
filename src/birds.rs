@@ -21,10 +21,10 @@ fn spawns(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mut _rng = rng();
-    for _ in 1.._rng.random_range(2..10) {
+    for _ in 1.._rng.random_range(2..20) {
         commands.spawn((
             Bird,
-            Transform::from_translation(random_translation_uniform(&mut _rng, -20.0..20.0)),
+            Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
             Mesh3d(meshes.add(shape::bird_meshes())),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: Color::Srgba(Srgba::hex("#ffa0d1").unwrap()),
@@ -58,7 +58,7 @@ impl Plugin for BirdsPlugin {
             .add_systems(Update, look_to::look_to)
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
-                30.0, 30.0, 30.0,
+                29.0, 29.0, 29.0,
             )))
             .add_systems(Update, spawns.run_if(spawn_by_key_condition))
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition));
