@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use birds_number::BirdNumberTextPlugin;
+use kd_tree::BirdsKdTreePlugin;
 use rand::{rng, Rng};
 
 use alignment::BirdAlignmentPlugin;
@@ -16,6 +17,7 @@ pub mod alignment;
 pub mod birds_number;
 pub mod cohesion;
 pub mod cube_bound;
+pub mod kd_tree;
 pub mod look_to;
 pub mod random_vel;
 pub mod separation;
@@ -87,6 +89,7 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdSeparationPlugin)
             .add_plugins(BirdAlignmentPlugin)
             .add_plugins(BirdCohesionPlugin)
-            .add_plugins(BirdNumberTextPlugin);
+            .add_plugins(BirdNumberTextPlugin)
+            .add_plugins(BirdsKdTreePlugin);
     }
 }
