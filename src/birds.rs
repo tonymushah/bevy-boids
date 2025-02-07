@@ -27,7 +27,7 @@ fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 5.0,
         neighboor_radius: 7.0,
-        cohesion_radius: (15.0, 25.0),
+        cohesion_radius: (8.0, 25.0),
     }
 }
 
