@@ -46,22 +46,13 @@ fn spawns(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let bird_color: Color = LinearRgba::rgb(
-        rng().random_range(0.0..1.0),
-        rng().random_range(0.0..1.0),
-        rng().random_range(0.0..1.0),
-    )
-    .into();
+    let bird_color: Color = LinearRgba::rgb(1.0, 0.5, 0.3).into();
 
     let mut _rng = rng();
     for _ in 1.._rng.random_range(2..20) {
         let has_light = rng().random_bool(1.0 / 5.0);
         let metalic = rng().random_bool(1.0 / 4.0);
-        let light_color = LinearRgba::rgb(
-            rng().random_range(0.0..1.0),
-            rng().random_range(0.0..1.0),
-            rng().random_range(0.0..1.0),
-        );
+        let light_color: LinearRgba = Srgba::hex("#f0d010").unwrap().into();
         let mut bird = commands.spawn((
             Bird,
             Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
@@ -70,7 +61,7 @@ fn spawns(
                 base_color: bird_color,
                 emissive_exposure_weight: if has_light { 1.0 } else { 0.0 },
                 emissive: if has_light {
-                    light_color
+                    light_color * 1000.0
                 } else {
                     LinearRgba::BLACK
                 },
