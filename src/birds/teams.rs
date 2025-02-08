@@ -18,6 +18,7 @@ pub struct ToggleTeamingPlugin;
 
 impl Plugin for ToggleTeamingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, toggle_teaming.run_if(toggle_teaming_condition));
+        app.insert_resource(Teaming(true))
+            .add_systems(Update, toggle_teaming.run_if(toggle_teaming_condition));
     }
 }
