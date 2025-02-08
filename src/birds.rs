@@ -61,7 +61,7 @@ fn spawns(
                 base_color: bird_color,
                 emissive_exposure_weight: if has_light { 1.0 } else { 0.0 },
                 emissive: if has_light {
-                    light_color * 1000.0
+                    light_color * 10000.0
                 } else {
                     LinearRgba::BLACK
                 },
