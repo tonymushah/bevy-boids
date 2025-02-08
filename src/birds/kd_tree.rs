@@ -6,7 +6,10 @@ use crate::{
     velocity::{is_paused, Velocity},
 };
 
-use super::{teams::Team, Bird};
+use super::{
+    teams::{Team, Teaming},
+    Bird,
+};
 
 #[derive(Debug, Clone)]
 pub struct BirdsKdTreeEntry {
@@ -53,12 +56,13 @@ pub struct BirdsKdTree(pub FlatKdTree<BirdsKdTreeEntry>);
 fn populate_tree(
     mut tree: ResMut<BirdsKdTree>,
     birds: Query<(&Transform, &Velocity, &Team, Entity), With<Bird>>,
+    res: Res<Teaming>,
 ) {
     **tree = FlatKdTree::balanced(birds.iter().map(|(t, velocity, team, e)| BirdsKdTreeEntry {
         coord: t.translation,
         entity: e,
         vel: *velocity,
-        team: Some(team.clone()),
+        team: if **res { Some(team.clone()) } else { None },
     }));
 }
 
