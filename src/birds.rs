@@ -7,6 +7,7 @@ use rand::{rng, Rng};
 use alignment::BirdAlignmentPlugin;
 use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
+use shi_bird_shadows::ShinyBirdShadowPlugin;
 
 use crate::{
     utils::random_translation_uniform,
@@ -24,6 +25,7 @@ pub mod look_to;
 pub mod random_vel;
 pub mod separation;
 pub mod shape;
+pub mod shi_bird_shadows;
 
 pub use gizmos::ShowBirdsGizmo;
 
@@ -71,9 +73,9 @@ fn spawns(
         ));
         if has_light {
             bird.insert(PointLight {
-                intensity: 3100.0,
+                intensity: 10000.0,
                 color: bird_color,
-                shadows_enabled: true,
+                shadows_enabled: false,
                 ..Default::default()
             });
         }
@@ -114,6 +116,7 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdCohesionPlugin)
             .add_plugins(BirdNumberTextPlugin)
             .add_plugins(BirdsKdTreePlugin)
-            .add_plugins(ShowBirdsGizmoPlugin);
+            .add_plugins(ShowBirdsGizmoPlugin)
+            .add_plugins(ShinyBirdShadowPlugin);
     }
 }
