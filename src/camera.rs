@@ -19,7 +19,21 @@ fn setup_camera(mut commands: Commands) {
         })
         .looking_at(Vec3::ZERO, Vec3::Y),
         PanOrbitCamera::default(),
+        Camera {
+            hdr: true,
+            ..Default::default()
+        },
     ));
+}
+
+fn toggle_hdr(mut cameras: Query<&mut Camera, With<MainCamera>>) {
+    for mut camera in &mut cameras {
+        camera.hdr = !camera.hdr;
+    }
+}
+
+fn toggle_hdr_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
+    keys.just_pressed(KeyCode::F2)
 }
 
 impl Plugin for MainCameraPlugin {
@@ -33,6 +47,7 @@ pub struct MainCameraPluginGroup;
 impl Plugin for MainCameraPluginGroup {
     fn build(&self, app: &mut App) {
         app.add_plugins(MainCameraPlugin)
-            .add_plugins(PanOrbitCameraPlugin);
+            .add_plugins(PanOrbitCameraPlugin)
+            .add_systems(Update, toggle_hdr.run_if(toggle_hdr_condition));
     }
 }
