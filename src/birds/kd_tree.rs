@@ -1,7 +1,10 @@
 use acap::{kd::FlatKdTree, Coordinates, Proximity};
 use bevy::prelude::*;
 
-use crate::utils::acap::InnerCoordVec3;
+use crate::{
+    utils::acap::InnerCoordVec3,
+    velocity::{is_paused, Velocity},
+};
 
 use super::Bird;
 
@@ -9,6 +12,7 @@ use super::Bird;
 pub struct BirdsKdTreeEntry {
     pub coord: Vec3,
     pub entity: Entity,
+    pub vel: Velocity,
 }
 
 impl Coordinates for BirdsKdTreeEntry {
@@ -45,10 +49,14 @@ impl Proximity<BirdsKdTreeEntry> for InnerCoordVec3 {
 #[derive(Debug, Resource, Deref, DerefMut)]
 pub struct BirdsKdTree(pub FlatKdTree<BirdsKdTreeEntry>);
 
-fn populate_tree(mut tree: ResMut<BirdsKdTree>, birds: Query<(&Transform, Entity), With<Bird>>) {
-    **tree = FlatKdTree::balanced(birds.iter().map(|(t, e)| BirdsKdTreeEntry {
+fn populate_tree(
+    mut tree: ResMut<BirdsKdTree>,
+    birds: Query<(&Transform, &Velocity, Entity), With<Bird>>,
+) {
+    **tree = FlatKdTree::balanced(birds.iter().map(|(t, velocity, e)| BirdsKdTreeEntry {
         coord: t.translation,
         entity: e,
+        vel: *velocity,
     }));
 }
 
@@ -56,7 +64,7 @@ pub struct BirdsKdTreePlugin;
 
 impl Plugin for BirdsKdTreePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, populate_tree)
+        app.add_systems(Update, populate_tree.run_if(not(is_paused)))
             .insert_resource(BirdsKdTree(FlatKdTree::balanced(
                 Vec::<BirdsKdTreeEntry>::new(),
             )));

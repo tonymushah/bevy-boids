@@ -25,11 +25,14 @@ pub mod shape;
 
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
-        min_distance: 5.0,
-        neighboor_radius: 7.0,
-        cohesion_radius: (8.0, 25.0),
+        min_distance: 2.0,
+        neighboor_radius: 5.0,
+        cohesion_radius: (4.0, 10.0),
     }
 }
+
+#[derive(Debug, Clone, Copy, Resource, DerefMut, Deref)]
+pub struct ShowBirdsGizmo(pub bool);
 
 #[derive(Component)]
 #[require(Mesh3d, Velocity, VisionRadius(default_vision_radius))]
@@ -71,6 +74,14 @@ fn despawn_all_by_key_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
     keys.just_pressed(KeyCode::F5)
 }
 
+fn toggle_bird_gizmo(mut should_show: ResMut<ShowBirdsGizmo>) {
+    **should_show = !**should_show;
+}
+
+fn toggle_bird_gizmo_run_key(keys: Res<ButtonInput<KeyCode>>) -> bool {
+    keys.just_pressed(KeyCode::F2)
+}
+
 pub struct BirdsPlugin;
 
 impl Plugin for BirdsPlugin {
@@ -90,6 +101,8 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdAlignmentPlugin)
             .add_plugins(BirdCohesionPlugin)
             .add_plugins(BirdNumberTextPlugin)
-            .add_plugins(BirdsKdTreePlugin);
+            .add_plugins(BirdsKdTreePlugin)
+            .insert_resource(ShowBirdsGizmo(true))
+            .add_systems(Update, toggle_bird_gizmo.run_if(toggle_bird_gizmo_run_key));
     }
 }

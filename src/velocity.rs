@@ -29,10 +29,7 @@ fn draw_arrow(
     for (transform, velocity) in has_velocities.iter() {
         gizmos.arrow(
             transform.translation,
-            transform.translation
-                + velocity
-                    .0
-                    .clamp(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0)),
+            transform.translation + velocity.0.normalize(),
             Color::Srgba(Srgba::BLUE),
         );
     }
@@ -77,7 +74,7 @@ pub struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (_move, draw_arrow).chain())
+        app.add_systems(Update, (_move, draw_arrow).chain().run_if(not(is_paused)))
             .insert_resource(IsPaused::default())
             .add_systems(
                 Update,

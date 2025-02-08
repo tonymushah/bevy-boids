@@ -4,17 +4,25 @@ use acap::{knn::Neighborhood, NearestNeighbors};
 use bevy::{color::palettes::css::PURPLE, prelude::*};
 use rand::{rng, Rng};
 
-use crate::{utils::acap::InnerCoordVec3, velocity::Velocity, vision_radius::VisionRadius};
-
-use super::{
-    /*birds_number::BirdNumber*/ kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
-    Bird,
+use crate::{
+    utils::acap::InnerCoordVec3,
+    velocity::{is_paused, Velocity},
+    vision_radius::VisionRadius,
 };
 
-const SIZE: usize = 2;
+use super::{
+    // birds_number::BirdNumber,
+    kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
+    Bird,
+    ShowBirdsGizmo,
+};
 
+const COHESION_TIMER: u64 = 10;
+
+/*
 #[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
 pub struct ShowCohesionForceGizmo(pub bool);
+*/
 
 #[derive(Debug, Resource, Clone, Copy, DerefMut, Deref)]
 pub struct IsCohersionActive(pub bool);
@@ -72,7 +80,7 @@ pub fn cohesion(
     mut timer: ResMut<CohesionTimer>,
     kd_tree: Res<BirdsKdTree>,
     // bird_number: Res<BirdNumber>,
-    show_gizmo: Res<ShowCohesionForceGizmo>,
+    show_gizmo: Res<ShowBirdsGizmo>,
 ) {
     if timer.tick(time.delta()).just_finished() {
         let mut computed: HashSet<Entity> = Default::default();
@@ -82,13 +90,12 @@ pub fn cohesion(
             } else {
                 continue;
             }
-            // TODO
 
             let center = {
                 let bird_trans = InnerCoordVec3(bird.1.translation);
                 let points = kd_tree
                     .search(BirdCohesionNeibhorHood {
-                        limit: Some(10),
+                        limit: Some(rng().random_range::<u64, _>(3..20) as usize),
                         target: &bird_trans,
                         entries: Default::default(),
                         vision: *bird.2,
@@ -111,7 +118,7 @@ pub fn cohesion(
             let pos_vec = bird.1.translation - center;
 
             let center_force =
-                (1.0 / rng().random_range::<i32, _>(1..=10) as f32) * pos_vec.normalize();
+                /*(rng().random_range::<f32, _>(0.25..=3.0) as f32) */ pos_vec.normalize();
 
             if **show_gizmo {
                 gizmos.arrow(
@@ -198,6 +205,7 @@ pub fn is_cohesion_active(res: Res<IsCohersionActive>) -> bool {
     **res
 }
 
+/*
 fn toggle_gizmos(mut show_gizmo: ResMut<ShowCohesionForceGizmo>) {
     **show_gizmo = !**show_gizmo;
 }
@@ -205,24 +213,29 @@ fn toggle_gizmos(mut show_gizmo: ResMut<ShowCohesionForceGizmo>) {
 fn toogle_gismo_condition(key: Res<ButtonInput<KeyCode>>) -> bool {
     key.all_just_pressed([KeyCode::F1])
 }
+*/
 
 pub struct BirdCohesionPlugin;
 
 impl Plugin for BirdCohesionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, cohesion.run_if(is_cohesion_active))
-            .add_systems(
-                Update,
-                (toogle_cohesion, toggle_timer)
-                    .chain()
-                    .run_if(toogle_cohesion_condition),
-            )
-            .insert_resource(IsCohersionActive(true))
-            .insert_resource(CohesionTimer(Timer::new(
-                Duration::from_millis(10 * SIZE as u64),
-                TimerMode::Repeating,
-            )))
-            .insert_resource(ShowCohesionForceGizmo(true))
-            .add_systems(Update, toggle_gizmos.run_if(toogle_gismo_condition));
+        app.add_systems(
+            Update,
+            cohesion.run_if(is_cohesion_active.and(not(is_paused))),
+        )
+        .add_systems(
+            Update,
+            (toogle_cohesion, toggle_timer)
+                .chain()
+                .run_if(toogle_cohesion_condition),
+        )
+        .insert_resource(IsCohersionActive(true))
+        .insert_resource(CohesionTimer(Timer::new(
+            Duration::from_millis(COHESION_TIMER),
+            TimerMode::Repeating,
+        )))
+        //.insert_resource(ShowCohesionForceGizmo(true))
+        //.add_systems(Update, toggle_gizmos.run_if(toogle_gismo_condition))
+        ;
     }
 }

@@ -1,14 +1,18 @@
 use bevy::{color::palettes::css::RED, prelude::*};
 
-use crate::{velocity::Velocity, vision_radius::VisionRadius};
+use crate::{
+    velocity::{is_paused, Velocity},
+    vision_radius::VisionRadius,
+};
 
-use super::Bird;
+use super::{Bird, ShowBirdsGizmo};
 
 #[allow(clippy::type_complexity)]
 pub fn separate(
     mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity), With<Bird>>,
     time: Res<Time>,
     mut gizmos: Gizmos,
+    show_gizmo: Res<ShowBirdsGizmo>,
 ) {
     let mut combinaisons = birds.iter_combinations_mut();
     while let Some([mut one, two]) = combinaisons.fetch_next() {
@@ -28,11 +32,13 @@ pub fn separate(
 
         let separation_force = pos_vec.normalize() * force_magnitude;
 
-        gizmos.arrow(
-            one.1.translation,
-            one.1.translation + separation_force.normalize(),
-            RED,
-        );
+        if **show_gizmo {
+            gizmos.arrow(
+                one.1.translation,
+                one.1.translation + separation_force.normalize(),
+                RED,
+            );
+        }
 
         **one.0 += separation_force;
     }
@@ -42,6 +48,6 @@ pub struct BirdSeparationPlugin;
 
 impl Plugin for BirdSeparationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, separate);
+        app.add_systems(Update, separate.run_if(not(is_paused)));
     }
 }
