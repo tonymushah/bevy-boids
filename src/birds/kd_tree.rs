@@ -13,7 +13,7 @@ pub struct BirdsKdTreeEntry {
     pub coord: Vec3,
     pub entity: Entity,
     pub vel: Velocity,
-    pub team: Team,
+    pub team: Option<Team>,
 }
 
 impl Coordinates for BirdsKdTreeEntry {
@@ -58,7 +58,7 @@ fn populate_tree(
         coord: t.translation,
         entity: e,
         vel: *velocity,
-        team: team.clone(),
+        team: Some(team.clone()),
     }));
 }
 

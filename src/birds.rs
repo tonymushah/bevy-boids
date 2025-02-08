@@ -8,7 +8,7 @@ use alignment::BirdAlignmentPlugin;
 use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
 use shi_bird_shadows::ShinyBirdShadowPlugin;
-use teams::Team;
+use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
     utils::random_translation_uniform,
@@ -55,7 +55,7 @@ fn spawns(
         let has_light = rng().random_bool(1.0 / 5.0);
         let metalic = rng().random_bool(1.0 / 4.0);
         let light_color: LinearRgba = Srgba::hex("#f0d010").unwrap().into();
-        let mut bird = commands.spawn((
+        let _bird = commands.spawn((
             Bird,
             Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
             Mesh3d(meshes.add(shape::bird_meshes())),
@@ -76,14 +76,6 @@ fn spawns(
             MaxSpeed(_rng.random_range(6.0..=12.0)),
             Team(format!("{}", rng().random_range::<u8, _>(0..15))),
         ));
-        if has_light {
-            bird.insert(PointLight {
-                intensity: 10000.0,
-                color: light_color.into(),
-                shadows_enabled: false,
-                ..Default::default()
-            });
-        }
     }
 }
 
@@ -122,6 +114,7 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdNumberTextPlugin)
             .add_plugins(BirdsKdTreePlugin)
             .add_plugins(ShowBirdsGizmoPlugin)
-            .add_plugins(ShinyBirdShadowPlugin);
+            .add_plugins(ShinyBirdShadowPlugin)
+            .add_plugins(ToggleTeamingPlugin);
     }
 }

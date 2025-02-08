@@ -61,7 +61,13 @@ impl<'k, 'v> Neighborhood<&'k InnerCoordVec3, &'v BirdsKdTreeEntry>
     ) -> <&'k InnerCoordVec3 as acap::Proximity>::Distance {
         let distance = self.target.distance(item.coord);
 
-        if self.contains(distance) && **self.team == **item.team {
+        if self.contains(distance)
+            && item
+                .team
+                .as_ref()
+                .map(|team| self.team == team)
+                .unwrap_or(true)
+        {
             if let Some(limit) = self.limit {
                 if self.entries.len() <= limit {
                     self.entries.push(item.clone());
