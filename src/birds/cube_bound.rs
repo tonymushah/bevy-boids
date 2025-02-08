@@ -5,7 +5,7 @@ use crate::velocity::Velocity;
 use super::Bird;
 
 #[derive(Resource, Deref, DerefMut)]
-struct CubeBound(pub Cuboid);
+pub struct CubeBound(pub Cuboid);
 
 #[derive(Debug, Component)]
 #[require(Mesh3d)]
