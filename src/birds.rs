@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use birds_number::BirdNumberTextPlugin;
+use gizmos::ShowBirdsGizmoPlugin;
 use kd_tree::BirdsKdTreePlugin;
 use rand::{rng, Rng};
 
@@ -17,11 +18,14 @@ pub mod alignment;
 pub mod birds_number;
 pub mod cohesion;
 pub mod cube_bound;
+mod gizmos;
 pub mod kd_tree;
 pub mod look_to;
 pub mod random_vel;
 pub mod separation;
 pub mod shape;
+
+pub use gizmos::ShowBirdsGizmo;
 
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
@@ -30,9 +34,6 @@ fn default_vision_radius() -> VisionRadius {
         cohesion_radius: (4.0, 10.0),
     }
 }
-
-#[derive(Debug, Clone, Copy, Resource, DerefMut, Deref)]
-pub struct ShowBirdsGizmo(pub bool);
 
 #[derive(Component)]
 #[require(Mesh3d, Velocity, VisionRadius(default_vision_radius))]
@@ -43,20 +44,39 @@ fn spawns(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let bird_color = Color::Srgba(Srgba::hex("#ffa0d1").unwrap());
     let mut _rng = rng();
     for _ in 1.._rng.random_range(2..20) {
-        commands.spawn((
+        let has_light = rng().random_bool(1.0 / 3.0);
+        let metalic = rng().random_bool(1.0 / 4.0);
+        let mut bird = commands.spawn((
             Bird,
             Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
             Mesh3d(meshes.add(shape::bird_meshes())),
             MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: Color::Srgba(Srgba::hex("#ffa0d1").unwrap()),
+                base_color: bird_color,
+                emissive_exposure_weight: if has_light { 1.0 } else { 0.0 },
+                emissive: if has_light {
+                    LinearRgba::rgb(250.0, 100.0, 200.0)
+                } else {
+                    LinearRgba::BLACK
+                },
+                reflectance: 0.9,
+                metallic: if metalic { 1.0 } else { 0.0 },
                 ..Default::default()
             })),
             Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
             ShowVelocityVector,
             MaxSpeed(_rng.random_range(6.0..=12.0)),
         ));
+        if has_light {
+            bird.insert(PointLight {
+                intensity: 3100.0,
+                color: bird_color,
+                shadows_enabled: true,
+                ..Default::default()
+            });
+        }
     }
 }
 
@@ -66,20 +86,12 @@ fn spawn_by_key_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
 
 fn despawn_all(mut commands: Commands, birds: Query<Entity, With<Bird>>) {
     for bird in &birds {
-        commands.entity(bird).despawn();
+        commands.entity(bird).despawn_recursive();
     }
 }
 
 fn despawn_all_by_key_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
     keys.just_pressed(KeyCode::F5)
-}
-
-fn toggle_bird_gizmo(mut should_show: ResMut<ShowBirdsGizmo>) {
-    **should_show = !**should_show;
-}
-
-fn toggle_bird_gizmo_run_key(keys: Res<ButtonInput<KeyCode>>) -> bool {
-    keys.just_pressed(KeyCode::F2)
 }
 
 pub struct BirdsPlugin;
@@ -102,7 +114,6 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdCohesionPlugin)
             .add_plugins(BirdNumberTextPlugin)
             .add_plugins(BirdsKdTreePlugin)
-            .insert_resource(ShowBirdsGizmo(true))
-            .add_systems(Update, toggle_bird_gizmo.run_if(toggle_bird_gizmo_run_key));
+            .add_plugins(ShowBirdsGizmoPlugin);
     }
 }
