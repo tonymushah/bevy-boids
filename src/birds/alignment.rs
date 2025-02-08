@@ -10,6 +10,7 @@ use crate::{
 
 use super::{
     kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
+    teams::Team,
     Bird, ShowBirdsGizmo,
 };
 
@@ -17,6 +18,7 @@ struct BirdAlignmentNeibhorHood<'k> {
     limit: Option<usize>,
     target: &'k InnerCoordVec3,
     entries: Vec<BirdsKdTreeEntry>,
+    team: &'k Team,
     vision: VisionRadius,
 }
 
@@ -40,13 +42,13 @@ impl<'k, 'v> Neighborhood<&'k InnerCoordVec3, &'v BirdsKdTreeEntry>
     ) -> <&'k InnerCoordVec3 as acap::Proximity>::Distance {
         let distance = self.target.distance(item.coord);
 
-        if self.contains(distance) {
+        if self.contains(distance) && **self.team == **item.team {
             if let Some(limit) = self.limit {
                 if self.entries.len() <= limit {
-                    self.entries.push(*item);
+                    self.entries.push(item.clone());
                 }
             } else {
-                self.entries.push(*item);
+                self.entries.push(item.clone());
             }
         }
         distance
@@ -55,7 +57,7 @@ impl<'k, 'v> Neighborhood<&'k InnerCoordVec3, &'v BirdsKdTreeEntry>
 
 #[allow(clippy::type_complexity)]
 pub fn align(
-    mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity), With<Bird>>,
+    mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity, &Team), With<Bird>>,
     // time: Res<Time>,
     mut gizmos: Gizmos,
     show_gizmos: Res<ShowBirdsGizmo>,
@@ -70,6 +72,7 @@ pub fn align(
                     target: &bird_trans,
                     entries: Default::default(),
                     vision: *bird.2,
+                    team: bird.4,
                 })
                 .entries
         };

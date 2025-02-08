@@ -8,6 +8,7 @@ use alignment::BirdAlignmentPlugin;
 use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
 use shi_bird_shadows::ShinyBirdShadowPlugin;
+use teams::Team;
 
 use crate::{
     utils::random_translation_uniform,
@@ -26,14 +27,15 @@ pub mod random_vel;
 pub mod separation;
 pub mod shape;
 pub mod shi_bird_shadows;
+pub mod teams;
 
 pub use gizmos::ShowBirdsGizmo;
 
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 2.0,
-        neighboor_radius: 5.0,
-        cohesion_radius: (4.0, 10.0),
+        neighboor_radius: 4.0,
+        cohesion_radius: (4.0, 8.0),
     }
 }
 
@@ -72,6 +74,7 @@ fn spawns(
             Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
             ShowVelocityVector,
             MaxSpeed(_rng.random_range(6.0..=12.0)),
+            Team(format!("{}", rng().random_range::<u8, _>(0..15))),
         ));
         if has_light {
             bird.insert(PointLight {
