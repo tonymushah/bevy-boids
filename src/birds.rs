@@ -13,7 +13,7 @@ use teams::{Team, ToggleTeamingPlugin};
 use crate::{
     utils::random_translation_uniform,
     velocity::{is_paused, MaxSpeed, ShowVelocityVector, Velocity},
-    vision_radius::VisionRadius,
+    vision_radius::{VisionRadius, CohesionRadius},
 };
 
 pub mod alignment;
@@ -35,12 +35,12 @@ fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 2.0,
         neighboor_radius: 4.0,
-        cohesion_radius: (4.0, 8.0),
+        cohesion_radius: CohesionRadius(4.0, 8.0),
     }
 }
 
 #[derive(Component)]
-#[require(Mesh3d, Velocity, VisionRadius(default_vision_radius))]
+#[require(Mesh3d, Velocity, VisionRadius{..default_vision_radius()})]
 pub struct Bird;
 
 fn spawns(
@@ -85,7 +85,7 @@ fn spawn_by_key_condition(keys: Res<ButtonInput<KeyCode>>) -> bool {
 
 fn despawn_all(mut commands: Commands, birds: Query<Entity, With<Bird>>) {
     for bird in &birds {
-        commands.entity(bird).despawn_recursive();
+        commands.entity(bird).despawn();
     }
 }
 
