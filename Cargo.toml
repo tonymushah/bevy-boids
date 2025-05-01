@@ -13,6 +13,6 @@ opt-level = 3
 
 [dependencies]
 acap = "0.3.0"
-bevy = "0.15"
-bevy_panorbit_camera = "0.23"
+bevy = "0.16"
+bevy_panorbit_camera = "0.26"
 rand = "0.9.0"
