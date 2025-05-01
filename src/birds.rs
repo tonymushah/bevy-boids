@@ -13,7 +13,7 @@ use teams::{Team, ToggleTeamingPlugin};
 use crate::{
     utils::random_translation_uniform,
     velocity::{is_paused, MaxSpeed, ShowVelocityVector, Velocity},
-    vision_radius::{VisionRadius, CohesionRadius},
+    vision_radius::{CohesionRadius, VisionRadius},
 };
 
 pub mod alignment;
