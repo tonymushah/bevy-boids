@@ -101,7 +101,9 @@ fn update_actual_mesh_cube_size(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     if let Some(cube) = cubes.iter_mut().next() {
-        meshes.insert(cube.id(), bound.mesh().into());
+        if let Err(e) = meshes.insert(cube.id(), bound.mesh().into()) {
+            error!("{e}");
+        }
     }
 }
 

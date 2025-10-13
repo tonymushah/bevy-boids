@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::Hdr};
 
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
@@ -19,16 +19,19 @@ fn setup_camera(mut commands: Commands) {
         })
         .looking_at(Vec3::ZERO, Vec3::Y),
         PanOrbitCamera::default(),
-        Camera {
-            hdr: true,
-            ..Default::default()
-        },
+        Camera::default(),
     ));
 }
 
-fn toggle_hdr(mut cameras: Query<&mut Camera, With<MainCamera>>) {
-    for mut camera in &mut cameras {
-        camera.hdr = !camera.hdr;
+fn toggle_hdr(cameras: Query<(Entity, Has<Hdr>), With<MainCamera>>, mut commands: Commands) {
+    for (camera, has_hdr) in cameras {
+        if let Ok(mut insp) = commands.get_entity(camera) {
+            if has_hdr {
+                insp.remove::<Hdr>();
+            } else {
+                insp.insert(Hdr);
+            }
+        }
     }
 }
 
