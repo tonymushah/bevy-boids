@@ -1,21 +1,21 @@
 use std::{collections::HashSet, time::Duration};
 
-use acap::{knn::Neighborhood, NearestNeighbors};
+use acap::{NearestNeighbors, knn::Neighborhood};
 use bevy::{color::palettes::css::PURPLE, prelude::*};
-use rand::{rng, Rng};
+use rand::{RngExt, rng};
 
 use crate::{
     utils::acap::InnerCoordVec3,
-    velocity::{is_paused, Velocity},
+    velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
 
 use super::{
+    Bird,
+    ShowBirdsGizmo,
     // birds_number::BirdNumber,
     kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
     teams::Team,
-    Bird,
-    ShowBirdsGizmo,
 };
 
 const COHESION_TIMER: u64 = 10;
@@ -230,7 +230,7 @@ impl Plugin for BirdCohesionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            cohesion.run_if(is_cohesion_active.and(not(is_paused))),
+            cohesion.run_if(is_cohesion_active.and_then(not(is_paused))),
         )
         .add_systems(
             Update,

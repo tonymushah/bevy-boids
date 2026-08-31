@@ -5,7 +5,7 @@ use bevy::{
 };
 
 use crate::{
-    velocity::{is_paused, Velocity},
+    velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
 
@@ -137,7 +137,7 @@ impl Plugin for BirdCubeBoundPlugin {
         app.add_systems(Update, flip_bird_transform)
             .add_systems(
                 Update,
-                prevent_bird_outbound_sys.run_if(prevent_bird_outbound.and(not(is_paused))),
+                prevent_bird_outbound_sys.run_if(prevent_bird_outbound.and_then(not(is_paused))),
             )
             .add_systems(
                 Update,

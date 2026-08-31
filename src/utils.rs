@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rand::{distr::uniform::SampleRange, Rng};
+use rand::{Rng, RngExt, distr::uniform::SampleRange};
 
 pub mod acap;
 
