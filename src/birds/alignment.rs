@@ -1,17 +1,17 @@
-use acap::{knn::Neighborhood, NearestNeighbors};
+use acap::{NearestNeighbors, knn::Neighborhood};
 use bevy::{color::palettes::css::GREEN, prelude::*};
-use rand::{rng, Rng};
+use rand::{RngExt, rng};
 
 use crate::{
     utils::acap::InnerCoordVec3,
-    velocity::{is_paused, Velocity},
+    velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
 
 use super::{
+    Bird, ShowBirdsGizmo,
     kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
     teams::Team,
-    Bird, ShowBirdsGizmo,
 };
 
 struct BirdAlignmentNeibhorHood<'k> {

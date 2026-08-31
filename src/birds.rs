@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use birds_number::BirdNumberTextPlugin;
 use gizmos::ShowBirdsGizmoPlugin;
 use kd_tree::BirdsKdTreePlugin;
-use rand::{rng, Rng};
+use rand::{RngExt, rng};
 
 use alignment::BirdAlignmentPlugin;
 use cohesion::BirdCohesionPlugin;
@@ -12,7 +12,7 @@ use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
     utils::random_translation_uniform,
-    velocity::{is_paused, MaxSpeed, ShowVelocityVector, Velocity},
+    velocity::{MaxSpeed, ShowVelocityVector, Velocity, is_paused},
     vision_radius::{CohesionRadius, VisionRadius},
 };
 
@@ -105,7 +105,7 @@ impl Plugin for BirdsPlugin {
             )))
             .add_systems(
                 Update,
-                spawns.run_if(spawn_by_key_condition.and(not(is_paused))),
+                spawns.run_if(spawn_by_key_condition.and_then(not(is_paused))),
             )
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
             .add_plugins(BirdSeparationPlugin)

@@ -22,7 +22,7 @@ fn setup(
         range: 30.0,
         radius: 10.0,
         intensity: 5_000_000f32,
-        shadows_enabled: true,
+        shadow_maps_enabled: true,
         ..Default::default()
     });
 }

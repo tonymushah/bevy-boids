@@ -15,7 +15,7 @@ fn toggle_shiny_bird_shadow_condition(key: Res<ButtonInput<KeyCode>>) -> bool {
 
 fn toggle_shadows(mut birds: Query<&mut PointLight, With<Bird>>, shadows: Res<ShinyBirdShadow>) {
     for mut bird in &mut birds {
-        bird.shadows_enabled = **shadows;
+        bird.shadow_maps_enabled = **shadows;
     }
 }
 
