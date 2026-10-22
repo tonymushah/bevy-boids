@@ -14,6 +14,7 @@ pub mod vision_radius;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .insert_resource(Time::<Fixed>::from_hz(20.))
         .add_plugins(MainCameraPluginGroup)
         .add_plugins(EnvironmentPlugin)
         .add_plugins(bevy_transform_interpolation::TransformEasingPlugin)

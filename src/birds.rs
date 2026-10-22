@@ -102,7 +102,7 @@ pub struct BirdsPlugin;
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawns)
-            .add_systems(Update, look_to::look_to.run_if(not(is_paused)))
+            .add_systems(FixedPostUpdate, look_to::look_to.run_if(not(is_paused)))
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
                 49.0, 49.0, 49.0,

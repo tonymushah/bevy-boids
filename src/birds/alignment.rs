@@ -105,14 +105,13 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
                         },
                     )?,
                 )
-                .without_distances()
                 .with_points()
                 .execute()
                 .into_iter()
                 .filter_map(|near_bird| {
                     if near_bird.item == bird.3.index_u32() {
                         None
-                    } else {
+                    } else if near_bird.distance > bird.2.min_distance {
                         let entity = Entity::from_raw_u32(near_bird.item)?;
                         let near_bird_info = cache_data.get(&entity)?;
                         if teaming.0 && &near_bird_info.team != bird.4 {
@@ -120,6 +119,8 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
                         } else {
                             Some(near_bird_info.velocity.0)
                         }
+                    } else {
+                        None
                     }
                 })
                 .collect::<Box<[_]>>()

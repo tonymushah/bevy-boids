@@ -238,14 +238,13 @@ fn get_neighbor(
                 ))
             })?,
         )
-        .without_distances()
         .with_points()
         .execute()
         .into_iter()
         .filter_map(|near_bird| {
             if near_bird.item == bird.3.index_u32() {
                 None
-            } else {
+            } else if bird.2.cohesion_radius.0 > near_bird.distance {
                 let near_bird_entity = Entity::from_raw_u32(near_bird.item)?;
                 let near_bird_info = birds_map.get(&near_bird_entity)?;
                 if teaming.0 && &near_bird_info.team != bird.4 {
@@ -253,6 +252,8 @@ fn get_neighbor(
                 } else {
                     Some(Vec3::from_array(near_bird.point))
                 }
+            } else {
+                None
             }
         })
         .collect::<Box<[_]>>())

@@ -55,7 +55,7 @@ pub struct BirdsKdTreePlugin;
 
 impl Plugin for BirdsKdTreePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostUpdate, populate_tree.run_if(not(is_paused)))
+        app.add_systems(FixedPreUpdate, populate_tree.run_if(not(is_paused)))
             .insert_resource(BirdsKdTree(ImmutableKdTree::default()));
     }
 }

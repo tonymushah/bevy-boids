@@ -74,15 +74,13 @@ pub struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            FixedPostUpdate,
-            (_move, draw_arrow).chain().run_if(not(is_paused)),
-        )
-        .insert_resource(IsPaused::default())
-        .add_systems(
-            Update,
-            (toggle_pause, handle_pause).chain().run_if(pause_condition),
-        )
-        .add_systems(FixedPostUpdate, handle_max_speed);
+        app.add_systems(FixedPostUpdate, _move.run_if(not(is_paused)))
+            .add_systems(PostUpdate, draw_arrow.run_if(not(is_paused)))
+            .insert_resource(IsPaused::default())
+            .add_systems(
+                Update,
+                (toggle_pause, handle_pause).chain().run_if(pause_condition),
+            )
+            .add_systems(FixedPostUpdate, handle_max_speed);
     }
 }
