@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use kiddo::ImmutableKdTree;
+use kiddo::{
+    kd_tree::KdTree, leaf_strategies::VecOfArenas, stem_strategies::donnelly::DonnellySimdFull,
+};
 
 use crate::velocity::is_paused;
 
@@ -25,7 +27,9 @@ use super::{
 // }
 
 #[derive(Debug, Resource, Deref, DerefMut)]
-pub struct BirdsKdTree(pub ImmutableKdTree<f32, 3>);
+pub struct BirdsKdTree(
+    pub KdTree<f32, u32, DonnellySimdFull<3>, VecOfArenas<f32, u32, 3, 32>, 3, 32>,
+);
 
 fn populate_tree(
     mut tree: ResMut<BirdsKdTree>,
@@ -33,19 +37,17 @@ fn populate_tree(
     // res: Res<Teaming>,
 ) -> Result<(), BevyError> {
     let birds = birds.iter().collect::<Box<[_]>>();
-    **tree = ImmutableKdTree::builder()
+    **tree = KdTree::builder()
+        .with_parallel_construction()
         .build_from_source(
             &birds,
-            |bird, axis| {
-                let point = bird.0.translation;
-                match axis {
-                    0 => point.x,
-                    1 => point.y,
-                    2 => point.z,
-                    _ => unreachable!(),
-                }
+            |bird, axis| match axis {
+                0 => bird.0.translation.x,
+                1 => bird.0.translation.y,
+                2 => bird.0.translation.z,
+                _ => unreachable!(),
             },
-            |_idx, point| point.1.index_u32(),
+            |_, data| data.1.index_u32(),
         )
         .map_err(BevyError::error)?;
     Ok(())
@@ -56,6 +58,6 @@ pub struct BirdsKdTreePlugin;
 impl Plugin for BirdsKdTreePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(FixedPreUpdate, populate_tree.run_if(not(is_paused)))
-            .insert_resource(BirdsKdTree(ImmutableKdTree::default()));
+            .insert_resource(BirdsKdTree(Default::default()));
     }
 }
