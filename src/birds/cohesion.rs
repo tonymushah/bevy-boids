@@ -6,6 +6,7 @@ use rand::{RngExt, rng};
 
 use crate::{
     birds::teams::Teaming,
+    utils::get_bird_kd_map,
     velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
@@ -94,7 +95,10 @@ pub fn cohesion(
     if timer.tick(time.delta()).just_finished() {
         let mut computed: HashSet<Entity> = Default::default();
 
-        while let Some(bird) = birds.iter().next() {
+        let birds_iter = birds.reborrow().into_readonly();
+        let birds_map = get_bird_kd_map(birds_iter);
+
+        for mut bird in &mut birds {
             if !computed.contains(&bird.3) {
                 computed.insert(bird.3);
             } else {
@@ -102,37 +106,7 @@ pub fn cohesion(
             }
 
             let center = {
-                let points = {
-                    kd_tree
-                        .query(&bird.1.translation.to_array())
-                        .best_n_within::<Chebyshev<_>>(
-                            bird.2.cohesion_radius.1,
-                            NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize)
-                                .ok_or_else(|| {
-                                    BevyError::warning(anyhow::format_err!(
-                                        "Cannot transform usize to NonZero variant"
-                                    ))
-                                })?,
-                        )
-                        .without_distances()
-                        .with_points()
-                        .execute()
-                        .into_iter()
-                        .filter_map(|near_bird| {
-                            if near_bird.item == bird.3.index_u32() {
-                                None
-                            } else {
-                                let near_bird_info =
-                                    birds.get(Entity::from_raw_u32(near_bird.item)?).ok()?;
-                                if teaming.0 && near_bird_info.4 != bird.4 {
-                                    None
-                                } else {
-                                    Some(Vec3::from_array(near_bird.point))
-                                }
-                            }
-                        })
-                        .collect::<Box<[_]>>()
-                };
+                let points = { get_neighbor(&kd_tree, &teaming, &birds_map, &bird)? };
                 // kd_tree
                 //     .search(BirdCohesionNeibhorHood {
                 //         limit: Some(),
@@ -169,9 +143,7 @@ pub fn cohesion(
                 );
             }
 
-            let bird_entity = bird.3;
-
-            **birds.get_mut(bird_entity)?.0 -= center_force;
+            **bird.0 -= center_force;
         }
         // This is old code for reference
         /*
@@ -227,6 +199,42 @@ pub fn cohesion(
         */
     }
     Ok(())
+}
+
+fn get_neighbor(
+    kd_tree: &Res<'_, BirdsKdTree>,
+    teaming: &Res<'_, Teaming>,
+    birds_map: &std::collections::HashMap<Entity, (Velocity, Transform, Team)>,
+    bird: &(Mut<'_, Velocity>, &Transform, &VisionRadius, Entity, &Team),
+) -> Result<Box<[Vec3]>, BevyError> {
+    Ok(kd_tree
+        .query(&bird.1.translation.to_array())
+        .best_n_within::<Chebyshev<_>>(
+            bird.2.cohesion_radius.1,
+            NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(|| {
+                BevyError::warning(anyhow::format_err!(
+                    "Cannot transform usize to NonZero variant"
+                ))
+            })?,
+        )
+        .without_distances()
+        .with_points()
+        .execute()
+        .into_iter()
+        .filter_map(|near_bird| {
+            if near_bird.item == bird.3.index_u32() {
+                None
+            } else {
+                let near_bird_entity = Entity::from_raw_u32(near_bird.item)?;
+                let near_bird_info = birds_map.get(&near_bird_entity)?;
+                if teaming.0 && &near_bird_info.2 != bird.4 {
+                    None
+                } else {
+                    Some(Vec3::from_array(near_bird.point))
+                }
+            }
+        })
+        .collect::<Box<[_]>>())
 }
 
 fn toogle_cohesion(mut res: ResMut<IsCohersionActive>) {

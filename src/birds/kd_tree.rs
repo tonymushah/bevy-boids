@@ -8,14 +8,6 @@ use super::{
     // teams::Teaming
 };
 
-// #[derive(Debug, Clone)]
-// pub struct BirdsKdTreeEntry {
-//     pub coord: Vec3,
-//     pub entity: Entity,
-//     pub vel: Velocity,
-//     pub team: Option<Team>,
-// }
-
 // impl Proximity<InnerCoordVec3> for BirdsKdTreeEntry {
 //     type Distance = f32;
 

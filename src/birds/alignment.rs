@@ -6,6 +6,7 @@ use rand::{RngExt, rng};
 
 use crate::{
     birds::teams::Teaming,
+    utils::get_bird_kd_map,
     velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
@@ -68,18 +69,11 @@ pub fn align(
     kd_tree: Res<BirdsKdTree>,
     teaming: Res<Teaming>,
 ) -> Result<(), BevyError> {
-    while let Some(bird) = &birds.iter().next() {
+    let birds_iter = birds.reborrow().into_readonly();
+    let birds_map = get_bird_kd_map(birds_iter);
+
+    for mut bird in &mut birds {
         let neighbors = {
-            // let bird_trans = InnerCoordVec3(bird.1.translation);
-            // kd_tree
-            //     .search(BirdAlignmentNeibhorHood {
-            //         limit: Some(rng().random_range::<u64, _>(3..20) as usize),
-            //         target: &bird_trans,
-            //         entries: Default::default(),
-            //         vision: *bird.2,
-            //         team: bird.4,
-            //     })
-            //     .entries
             kd_tree
                 .query(&bird.1.translation.to_array())
                 .best_n_within::<Chebyshev<_>>(
@@ -100,12 +94,12 @@ pub fn align(
                     if near_bird.item == bird.3.index_u32() {
                         None
                     } else {
-                        let near_bird_info =
-                            birds.get(Entity::from_raw_u32(near_bird.item)?).ok()?;
-                        if teaming.0 && near_bird_info.4 != bird.4 {
+                        let entity = Entity::from_raw_u32(near_bird.item)?;
+                        let near_bird_info = birds_map.get(&entity)?;
+                        if teaming.0 && &near_bird_info.2 != bird.4 {
                             None
                         } else {
-                            Some(near_bird_info.0)
+                            Some(*near_bird_info.0)
                         }
                     }
                 })
@@ -116,7 +110,7 @@ pub fn align(
             continue;
         }
 
-        let average_vel = neighbors.iter().map(|b| b.0).sum::<Vec3>() / neighbors.len() as f32;
+        let average_vel = neighbors.iter().sum::<Vec3>() / neighbors.len() as f32;
 
         if **show_gizmos {
             gizmos.arrow(
@@ -126,11 +120,11 @@ pub fn align(
             );
         }
 
-        let bird_entity = bird.3;
         // drop(bird);
 
-        **birds.get_mut(bird_entity)?.0 += average_vel.normalize();
+        **bird.0 += average_vel.normalize();
     }
+
     Ok(())
     /*
     let mut combinaisons = birds.iter_combinations_mut();
@@ -160,6 +154,7 @@ pub fn align(
     }
     */
 }
+
 pub struct BirdAlignmentPlugin;
 
 impl Plugin for BirdAlignmentPlugin {

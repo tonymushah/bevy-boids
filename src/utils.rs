@@ -1,5 +1,13 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 use rand::{Rng, RngExt, distr::uniform::SampleRange};
+
+use crate::{
+    birds::{Bird, teams::Team},
+    velocity::Velocity,
+    vision_radius::VisionRadius,
+};
 
 pub fn random_translation_uniform<R>(rng: &mut impl Rng, range: R) -> Vec3
 where
@@ -23,4 +31,13 @@ where
     let z = rng.random_range(z_range);
 
     Vec3::new(x, y, z)
+}
+
+pub(crate) fn get_bird_kd_map(
+    birds_iter: Query<(&Velocity, &Transform, &VisionRadius, Entity, &Team), With<Bird>>,
+) -> HashMap<Entity, (Velocity, Transform, Team)> {
+    birds_iter
+        .iter()
+        .map(|a| (a.3, (*a.0, *a.1, a.4.clone())))
+        .collect::<HashMap<_, _>>()
 }
