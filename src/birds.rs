@@ -37,8 +37,8 @@ pub use gizmos::ShowBirdsGizmo;
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 2.0,
-        neighboor_radius: 4.0,
-        cohesion_radius: CohesionRadius(4.0, 8.0),
+        neighboor_radius: 25.0,
+        cohesion_radius: CohesionRadius(3.0, 25.0),
     }
 }
 

@@ -1,8 +1,8 @@
-use std::num::NonZeroUsize;
+// use std::num::NonZeroUsize;
 
 use bevy::{color::palettes::css::GREEN, ecs::system::SystemParam, prelude::*};
 use kiddo::dist::SquaredEuclidean;
-use rand::{RngExt, rng};
+// use rand::{RngExt, rng};
 
 use crate::{
     birds::{birds_cache::BirdsCache, teams::Teaming},
@@ -95,15 +95,15 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
         let neighbors = {
             kd_tree
                 .query(&bird.1.translation.to_array())
-                .nearest_n(
-                    NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(
-                        || {
-                            BevyError::warning(anyhow::format_err!(
-                                "Cannot transform usize to NonZero variant"
-                            ))
-                        },
-                    )?,
-                )
+                // .nearest_n(
+                //     NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(
+                //         || {
+                //             BevyError::warning(anyhow::format_err!(
+                //                 "Cannot transform usize to NonZero variant"
+                //             ))
+                //         },
+                //     )?,
+                // )
                 .within::<SquaredEuclidean<_>>(bird.2.neighboor_radius)
                 .with_points()
                 .execute()
@@ -111,7 +111,7 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
                 .filter_map(|near_bird| {
                     if near_bird.item == bird.3.index_u32() {
                         None
-                    } else if near_bird.distance > bird.2.min_distance {
+                    } else if bird.2.min_distance < near_bird.distance {
                         let entity = Entity::from_raw_u32(near_bird.item)?;
                         let near_bird_info = cache_data.get(&entity)?;
                         if teaming.0 && &near_bird_info.team != bird.4 {
