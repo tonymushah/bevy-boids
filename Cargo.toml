@@ -13,6 +13,6 @@ opt-level = 3
 
 [dependencies]
 kiddo = "6"
-bevy = "0.19"
-bevy_panorbit_camera = "0.35"
+bevy = "0.20"
+bevy_panorbit_camera = "0.36"
 rand = "0.10"
