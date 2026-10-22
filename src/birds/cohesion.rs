@@ -1,7 +1,7 @@
 use std::{collections::HashSet, num::NonZeroUsize, time::Duration};
 
 use bevy::{color::palettes::css::PURPLE, ecs::system::SystemParam, prelude::*};
-use kiddo::dist::Chebyshev;
+use kiddo::dist::SquaredEuclidean;
 use rand::{RngExt, rng};
 
 use crate::{
@@ -230,14 +230,14 @@ fn get_neighbor(
 ) -> Result<Box<[Vec3]>, BevyError> {
     Ok(kd_tree
         .query(&bird.1.translation.to_array())
-        .best_n_within::<Chebyshev<_>>(
-            bird.2.cohesion_radius.1,
+        .nearest_n(
             NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(|| {
                 BevyError::warning(anyhow::format_err!(
                     "Cannot transform usize to NonZero variant"
                 ))
             })?,
         )
+        .within::<SquaredEuclidean<_>>(bird.2.cohesion_radius.1)
         .with_points()
         .execute()
         .into_iter()

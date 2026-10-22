@@ -1,7 +1,7 @@
 use std::num::NonZeroUsize;
 
 use bevy::{color::palettes::css::GREEN, ecs::system::SystemParam, prelude::*};
-use kiddo::dist::Chebyshev;
+use kiddo::dist::SquaredEuclidean;
 use rand::{RngExt, rng};
 
 use crate::{
@@ -95,8 +95,7 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
         let neighbors = {
             kd_tree
                 .query(&bird.1.translation.to_array())
-                .best_n_within::<Chebyshev<_>>(
-                    bird.2.neighboor_radius,
+                .nearest_n(
                     NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(
                         || {
                             BevyError::warning(anyhow::format_err!(
@@ -105,6 +104,7 @@ pub fn align(param: AlignParam) -> Result<(), BevyError> {
                         },
                     )?,
                 )
+                .within::<SquaredEuclidean<_>>(bird.2.neighboor_radius)
                 .with_points()
                 .execute()
                 .into_iter()
