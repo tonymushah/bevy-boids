@@ -476,6 +476,7 @@ dependencies = [
  "anyhow",
  "bevy",
  "bevy_panorbit_camera",
+ "bevy_transform_interpolation",
  "kiddo",
  "rand",
 ]
@@ -1836,6 +1837,15 @@ dependencies = [
  "derive_more",
  "serde",
  "thiserror 2.0.21",
+]
+
+[[package]]
+name = "bevy_transform_interpolation"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a49c0c0722c64d9137b2a5022cb399da15858c3491047fc42e3de9dbb5f100b6"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

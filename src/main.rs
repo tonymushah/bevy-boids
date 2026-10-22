@@ -16,6 +16,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(MainCameraPluginGroup)
         .add_plugins(EnvironmentPlugin)
+        .add_plugins(bevy_transform_interpolation::TransformEasingPlugin)
         .add_plugins(BirdsPlugin)
         .add_plugins(VelocityPlugin)
         .run();

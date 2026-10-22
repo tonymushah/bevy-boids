@@ -1,12 +1,11 @@
 use std::{collections::HashSet, num::NonZeroUsize, time::Duration};
 
-use bevy::{color::palettes::css::PURPLE, prelude::*};
+use bevy::{color::palettes::css::PURPLE, ecs::system::SystemParam, prelude::*};
 use kiddo::dist::Chebyshev;
 use rand::{RngExt, rng};
 
 use crate::{
-    birds::teams::Teaming,
-    utils::get_bird_kd_map,
+    birds::{birds_cache::BirdsCache, teams::Teaming},
     velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
@@ -81,22 +80,44 @@ pub struct CohesionTimer(pub Timer);
 //     }
 // }
 
-#[allow(clippy::type_complexity)]
-pub fn cohesion(
-    mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity, &Team), With<Bird>>,
-    time: Res<Time>,
-    mut gizmos: Gizmos,
-    mut timer: ResMut<CohesionTimer>,
-    kd_tree: Res<BirdsKdTree>,
+#[derive(SystemParam)]
+pub struct CohesionParam<'w, 's> {
+    pub birds: Query<
+        'w,
+        's,
+        (
+            &'static mut Velocity,
+            &'static Transform,
+            &'static VisionRadius,
+            Entity,
+            &'static Team,
+        ),
+        With<Bird>,
+    >,
+    pub time: Res<'w, Time>,
+    pub gizmos: Gizmos<'w, 's>,
+    pub timer: ResMut<'w, CohesionTimer>,
+    pub kd_tree: Res<'w, BirdsKdTree>,
     // bird_number: Res<BirdNumber>,
-    show_gizmo: Res<ShowBirdsGizmo>,
-    teaming: Res<Teaming>,
-) -> Result<(), BevyError> {
+    pub show_gizmo: Res<'w, ShowBirdsGizmo>,
+    pub teaming: Res<'w, Teaming>,
+    pub bird_cache_data: Res<'w, BirdsCache>,
+}
+
+#[allow(clippy::type_complexity)]
+pub fn cohesion(param: CohesionParam) -> Result<(), BevyError> {
+    let CohesionParam {
+        mut birds,
+        time,
+        mut gizmos,
+        mut timer,
+        kd_tree,
+        show_gizmo,
+        teaming,
+        bird_cache_data,
+    } = param;
     if timer.tick(time.delta()).just_finished() {
         let mut computed: HashSet<Entity> = Default::default();
-
-        let birds_iter = birds.reborrow().into_readonly();
-        let birds_map = get_bird_kd_map(birds_iter);
 
         for mut bird in &mut birds {
             if !computed.contains(&bird.3) {
@@ -106,7 +127,7 @@ pub fn cohesion(
             }
 
             let center = {
-                let points = { get_neighbor(&kd_tree, &teaming, &birds_map, &bird)? };
+                let points = { get_neighbor(&kd_tree, &teaming, &bird_cache_data, &bird)? };
                 // kd_tree
                 //     .search(BirdCohesionNeibhorHood {
                 //         limit: Some(),
@@ -204,7 +225,7 @@ pub fn cohesion(
 fn get_neighbor(
     kd_tree: &Res<'_, BirdsKdTree>,
     teaming: &Res<'_, Teaming>,
-    birds_map: &std::collections::HashMap<Entity, (Velocity, Transform, Team)>,
+    birds_map: &Res<BirdsCache>,
     bird: &(Mut<'_, Velocity>, &Transform, &VisionRadius, Entity, &Team),
 ) -> Result<Box<[Vec3]>, BevyError> {
     Ok(kd_tree
@@ -227,7 +248,7 @@ fn get_neighbor(
             } else {
                 let near_bird_entity = Entity::from_raw_u32(near_bird.item)?;
                 let near_bird_info = birds_map.get(&near_bird_entity)?;
-                if teaming.0 && &near_bird_info.2 != bird.4 {
+                if teaming.0 && &near_bird_info.team != bird.4 {
                     None
                 } else {
                     Some(Vec3::from_array(near_bird.point))
@@ -272,7 +293,7 @@ pub struct BirdCohesionPlugin;
 impl Plugin for BirdCohesionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            FixedUpdate,
             cohesion.run_if(is_cohesion_active.and_then(not(is_paused))),
         )
         .add_systems(

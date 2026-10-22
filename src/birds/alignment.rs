@@ -1,12 +1,11 @@
 use std::num::NonZeroUsize;
 
-use bevy::{color::palettes::css::GREEN, prelude::*};
+use bevy::{color::palettes::css::GREEN, ecs::system::SystemParam, prelude::*};
 use kiddo::dist::Chebyshev;
 use rand::{RngExt, rng};
 
 use crate::{
-    birds::teams::Teaming,
-    utils::get_bird_kd_map,
+    birds::{birds_cache::BirdsCache, teams::Teaming},
     velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
@@ -60,18 +59,38 @@ use super::{Bird, ShowBirdsGizmo, kd_tree::BirdsKdTree, teams::Team};
 //     }
 // }
 
-#[allow(clippy::type_complexity)]
-pub fn align(
-    mut birds: Query<(&mut Velocity, &Transform, &VisionRadius, Entity, &Team), With<Bird>>,
+#[derive(SystemParam)]
+pub struct AlignParam<'w, 's> {
+    pub birds: Query<
+        'w,
+        's,
+        (
+            &'static mut Velocity,
+            &'static Transform,
+            &'static VisionRadius,
+            Entity,
+            &'static Team,
+        ),
+        With<Bird>,
+    >,
     // time: Res<Time>,
-    mut gizmos: Gizmos,
-    show_gizmos: Res<ShowBirdsGizmo>,
-    kd_tree: Res<BirdsKdTree>,
-    teaming: Res<Teaming>,
-) -> Result<(), BevyError> {
-    let birds_iter = birds.reborrow().into_readonly();
-    let birds_map = get_bird_kd_map(birds_iter);
+    pub gizmos: Gizmos<'w, 's>,
+    pub show_gizmos: Res<'w, ShowBirdsGizmo>,
+    pub kd_tree: Res<'w, BirdsKdTree>,
+    pub teaming: Res<'w, Teaming>,
+    pub cache_data: Res<'w, BirdsCache>,
+}
 
+#[allow(clippy::type_complexity)]
+pub fn align(param: AlignParam) -> Result<(), BevyError> {
+    let AlignParam {
+        mut birds,
+        mut gizmos,
+        show_gizmos,
+        kd_tree,
+        teaming,
+        cache_data,
+    } = param;
     for mut bird in &mut birds {
         let neighbors = {
             kd_tree
@@ -95,11 +114,11 @@ pub fn align(
                         None
                     } else {
                         let entity = Entity::from_raw_u32(near_bird.item)?;
-                        let near_bird_info = birds_map.get(&entity)?;
-                        if teaming.0 && &near_bird_info.2 != bird.4 {
+                        let near_bird_info = cache_data.get(&entity)?;
+                        if teaming.0 && &near_bird_info.team != bird.4 {
                             None
                         } else {
-                            Some(*near_bird_info.0)
+                            Some(near_bird_info.velocity.0)
                         }
                     }
                 })
@@ -159,6 +178,6 @@ pub struct BirdAlignmentPlugin;
 
 impl Plugin for BirdAlignmentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, align.run_if(not(is_paused)));
+        app.add_systems(FixedUpdate, align.run_if(not(is_paused)));
     }
 }
