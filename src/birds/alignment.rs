@@ -1,65 +1,63 @@
-use acap::{NearestNeighbors, knn::Neighborhood};
+use std::num::NonZeroUsize;
+
 use bevy::{color::palettes::css::GREEN, prelude::*};
+use kiddo::dist::Chebyshev;
 use rand::{RngExt, rng};
 
 use crate::{
-    utils::acap::InnerCoordVec3,
+    birds::teams::Teaming,
     velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
 
-use super::{
-    Bird, ShowBirdsGizmo,
-    kd_tree::{BirdsKdTree, BirdsKdTreeEntry},
-    teams::Team,
-};
+use super::{Bird, ShowBirdsGizmo, kd_tree::BirdsKdTree, teams::Team};
 
-struct BirdAlignmentNeibhorHood<'k> {
-    limit: Option<usize>,
-    target: &'k InnerCoordVec3,
-    entries: Vec<BirdsKdTreeEntry>,
-    team: &'k Team,
-    vision: VisionRadius,
-}
+// struct BirdAlignmentNeibhorHood<'k> {
+//     limit: Option<usize>,
+//     target: &'k InnerCoordVec3,
+//     entries: Vec<BirdsKdTreeEntry>,
+//     team: &'k Team,
+//     vision: VisionRadius,
+// }
 
-impl<'k, 'v> Neighborhood<&'k InnerCoordVec3, &'v BirdsKdTreeEntry>
-    for BirdAlignmentNeibhorHood<'k>
-{
-    fn target(&self) -> &'k InnerCoordVec3 {
-        self.target
-    }
+// impl<'k, 'v> Neighborhood<&'k InnerCoordVec3, &'v BirdsKdTreeEntry>
+//     for BirdAlignmentNeibhorHood<'k>
+// {
+//     fn target(&self) -> &'k InnerCoordVec3 {
+//         self.target
+//     }
 
-    fn contains<D>(&self, distance: D) -> bool
-    where
-        D: PartialOrd<<&'k InnerCoordVec3 as acap::Proximity>::Distance>,
-    {
-        distance > self.vision.min_distance && distance < self.vision.neighboor_radius
-    }
+//     fn contains<D>(&self, distance: D) -> bool
+//     where
+//         D: PartialOrd<<&'k InnerCoordVec3 as acap::Proximity>::Distance>,
+//     {
+//         distance > self.vision.min_distance && distance < self.vision.neighboor_radius
+//     }
 
-    fn consider(
-        &mut self,
-        item: &'v BirdsKdTreeEntry,
-    ) -> <&'k InnerCoordVec3 as acap::Proximity>::Distance {
-        let distance = self.target.distance(item.coord);
+//     fn consider(
+//         &mut self,
+//         item: &'v BirdsKdTreeEntry,
+//     ) -> <&'k InnerCoordVec3 as acap::Proximity>::Distance {
+//         let distance = self.target.distance(item.coord);
 
-        if self.contains(distance)
-            && item
-                .team
-                .as_ref()
-                .map(|team| self.team == team)
-                .unwrap_or(true)
-        {
-            if let Some(limit) = self.limit {
-                if self.entries.len() <= limit {
-                    self.entries.push(item.clone());
-                }
-            } else {
-                self.entries.push(item.clone());
-            }
-        }
-        distance
-    }
-}
+//         if self.contains(distance)
+//             && item
+//                 .team
+//                 .as_ref()
+//                 .map(|team| self.team == team)
+//                 .unwrap_or(true)
+//         {
+//             if let Some(limit) = self.limit {
+//                 if self.entries.len() <= limit {
+//                     self.entries.push(item.clone());
+//                 }
+//             } else {
+//                 self.entries.push(item.clone());
+//             }
+//         }
+//         distance
+//     }
+// }
 
 #[allow(clippy::type_complexity)]
 pub fn align(
@@ -68,26 +66,57 @@ pub fn align(
     mut gizmos: Gizmos,
     show_gizmos: Res<ShowBirdsGizmo>,
     kd_tree: Res<BirdsKdTree>,
-) {
-    for mut bird in &mut birds {
+    teaming: Res<Teaming>,
+) -> Result<(), BevyError> {
+    while let Some(bird) = &birds.iter().next() {
         let neighbors = {
-            let bird_trans = InnerCoordVec3(bird.1.translation);
+            // let bird_trans = InnerCoordVec3(bird.1.translation);
+            // kd_tree
+            //     .search(BirdAlignmentNeibhorHood {
+            //         limit: Some(rng().random_range::<u64, _>(3..20) as usize),
+            //         target: &bird_trans,
+            //         entries: Default::default(),
+            //         vision: *bird.2,
+            //         team: bird.4,
+            //     })
+            //     .entries
             kd_tree
-                .search(BirdAlignmentNeibhorHood {
-                    limit: Some(rng().random_range::<u64, _>(3..20) as usize),
-                    target: &bird_trans,
-                    entries: Default::default(),
-                    vision: *bird.2,
-                    team: bird.4,
+                .query(&bird.1.translation.to_array())
+                .best_n_within::<Chebyshev<_>>(
+                    bird.2.neighboor_radius,
+                    NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(
+                        || {
+                            BevyError::warning(anyhow::format_err!(
+                                "Cannot transform usize to NonZero variant"
+                            ))
+                        },
+                    )?,
+                )
+                .without_distances()
+                .with_points()
+                .execute()
+                .into_iter()
+                .filter_map(|near_bird| {
+                    if near_bird.item == bird.3.index_u32() {
+                        None
+                    } else {
+                        let near_bird_info =
+                            birds.get(Entity::from_raw_u32(near_bird.item)?).ok()?;
+                        if teaming.0 && near_bird_info.4 != bird.4 {
+                            None
+                        } else {
+                            Some(near_bird_info.0)
+                        }
+                    }
                 })
-                .entries
+                .collect::<Box<[_]>>()
         };
 
         if neighbors.is_empty() {
             continue;
         }
 
-        let average_vel = neighbors.iter().map(|b| *b.vel).sum::<Vec3>() / neighbors.len() as f32;
+        let average_vel = neighbors.iter().map(|b| b.0).sum::<Vec3>() / neighbors.len() as f32;
 
         if **show_gizmos {
             gizmos.arrow(
@@ -97,8 +126,12 @@ pub fn align(
             );
         }
 
-        **bird.0 += average_vel.normalize();
+        let bird_entity = bird.3;
+        // drop(bird);
+
+        **birds.get_mut(bird_entity)?.0 += average_vel.normalize();
     }
+    Ok(())
     /*
     let mut combinaisons = birds.iter_combinations_mut();
     while let Some([mut one, two]) = combinaisons.fetch_next() {

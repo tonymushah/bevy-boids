@@ -1,7 +1,7 @@
 use bevy::{
     color::palettes::css::RED,
-    math::bounding::{Bounded3d, RayCast3d},
     prelude::*,
+    shape::{Bounded3d, RayCast3d},
 };
 
 use crate::{
@@ -100,10 +100,10 @@ fn update_actual_mesh_cube_size(
     bound: Res<CubeBound>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    if let Some(cube) = cubes.iter_mut().next() {
-        if let Err(e) = meshes.insert(cube.id(), bound.mesh().into()) {
-            error!("{e}");
-        }
+    if let Some(cube) = cubes.iter_mut().next()
+        && let Err(e) = meshes.insert(cube.id(), bound.mesh().into())
+    {
+        error!("{e}");
     }
 }
 
