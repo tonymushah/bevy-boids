@@ -12,8 +12,9 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-acap = "0.3.0"
-bevy = "0.19"
-bevy_panorbit_camera = "0.35"
+kiddo = {version = "6", features = ["simd"]}
+bevy = "0.20"
+bevy_panorbit_camera = "0.36"
 rand = "0.10"
-
+anyhow = "1"
+bevy_transform_interpolation = "0.6"

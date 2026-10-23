@@ -34,8 +34,8 @@ pub struct BirdNumberTextPlugin;
 impl Plugin for BirdNumberTextPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BirdNumber(0))
-            .add_systems(Update, update_text.run_if(update_text_condition))
-            .add_systems(Update, update_bird_number)
+            .add_systems(FixedUpdate, update_text.run_if(update_text_condition))
+            .add_systems(FixedUpdate, update_bird_number)
             .add_systems(Startup, setup);
     }
 }

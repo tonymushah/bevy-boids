@@ -1,7 +1,7 @@
 use bevy::{color::palettes::css::RED, prelude::*};
 
 use crate::{
-    velocity::{is_paused, Velocity},
+    velocity::{Velocity, is_paused},
     vision_radius::VisionRadius,
 };
 
@@ -48,6 +48,6 @@ pub struct BirdSeparationPlugin;
 
 impl Plugin for BirdSeparationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, separate.run_if(not(is_paused)));
+        app.add_systems(FixedUpdate, separate.run_if(not(is_paused)));
     }
 }

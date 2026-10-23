@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use rand::{Rng, RngExt, distr::uniform::SampleRange};
 
-pub mod acap;
-
 pub fn random_translation_uniform<R>(rng: &mut impl Rng, range: R) -> Vec3
 where
     R: SampleRange<f32> + Clone,

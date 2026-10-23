@@ -1,22 +1,25 @@
 use bevy::prelude::*;
-use birds_number::BirdNumberTextPlugin;
+use bevy_transform_interpolation::prelude::*;
 use gizmos::ShowBirdsGizmoPlugin;
 use kd_tree::BirdsKdTreePlugin;
 use rand::{RngExt, rng};
 
 use alignment::BirdAlignmentPlugin;
+use birds_number::BirdNumberTextPlugin;
 use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
 use shi_bird_shadows::ShinyBirdShadowPlugin;
 use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
+    birds::birds_cache::BirdsCachePlugin,
     utils::random_translation_uniform,
     velocity::{MaxSpeed, ShowVelocityVector, Velocity, is_paused},
     vision_radius::{CohesionRadius, VisionRadius},
 };
 
 pub mod alignment;
+pub mod birds_cache;
 pub mod birds_number;
 pub mod cohesion;
 pub mod cube_bound;
@@ -34,8 +37,8 @@ pub use gizmos::ShowBirdsGizmo;
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 2.0,
-        neighboor_radius: 4.0,
-        cohesion_radius: CohesionRadius(4.0, 8.0),
+        neighboor_radius: 25.0,
+        cohesion_radius: CohesionRadius(3.0, 25.0),
     }
 }
 
@@ -75,6 +78,7 @@ fn spawns(
             ShowVelocityVector,
             MaxSpeed(_rng.random_range(6.0..=12.0)),
             Team(format!("{}", rng().random_range::<u8, _>(0..15))),
+            TransformExtrapolation,
         ));
     }
 }
@@ -98,7 +102,7 @@ pub struct BirdsPlugin;
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawns)
-            .add_systems(Update, look_to::look_to.run_if(not(is_paused)))
+            .add_systems(FixedPostUpdate, look_to::look_to.run_if(not(is_paused)))
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
                 49.0, 49.0, 49.0,
@@ -115,6 +119,7 @@ impl Plugin for BirdsPlugin {
             .add_plugins(BirdsKdTreePlugin)
             .add_plugins(ShowBirdsGizmoPlugin)
             .add_plugins(ShinyBirdShadowPlugin)
-            .add_plugins(ToggleTeamingPlugin);
+            .add_plugins(ToggleTeamingPlugin)
+            .add_plugins(BirdsCachePlugin);
     }
 }
