@@ -72,7 +72,7 @@ pub fn interactions_system(param: InteractionParam) {
             //         },
             //     )?,
             // )
-            .within::<SquaredEuclidean<_>>(bird.2.cohesion_radius.1)
+            .within::<SquaredEuclidean<_>>(bird.2.max_vision())
             .with_points()
             .execute()
             .into_iter()
