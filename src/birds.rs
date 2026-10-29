@@ -79,7 +79,7 @@ fn spawns(
             ShowVelocityVector,
             MaxSpeed(_rng.random_range(6.0..=12.0)),
             Team(format!("{}", rng().random_range::<u8, _>(0..15))),
-            TransformExtrapolation,
+            TransformInterpolation,
         ));
     }
 }
