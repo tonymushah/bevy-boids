@@ -13,8 +13,9 @@ use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
     birds::{
-        birds_cache::BirdsCachePlugin, interactions::BirdInteractionsPlugin,
-        mesh_material_registry::BirdMeshes,
+        birds_cache::BirdsCachePlugin,
+        interactions::BirdInteractionsPlugin,
+        mesh_material_registry::{BirdMaterialEntry, BirdMaterials, BirdMeshes},
     },
     utils::random_translation_uniform,
     velocity::{MaxSpeed, ShowVelocityVector, Velocity, is_paused},
@@ -43,7 +44,7 @@ fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 2.0,
         neighboor_radius: 25.0,
-        cohesion_radius: CohesionRadius(3.0, 25.0),
+        cohesion_radius: CohesionRadius(3.0, 30.0),
     }
 }
 
@@ -56,34 +57,29 @@ fn spawns(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut bird_base_mesh: ResMut<BirdMeshes>,
+    mut bird_materials: ResMut<BirdMaterials>,
 ) {
-    let bird_color: Color = LinearRgba::rgb(1.0, 0.5, 0.3).into();
-
-    let mut _rng = rng();
-    for _ in 1.._rng.random_range(2..20) {
-        let has_light = rng().random_bool(1.0 / 5.0);
-        let metalic = rng().random_bool(1.0 / 4.0);
-        let light_color: LinearRgba = Srgba::hex("#f0d010").unwrap().into();
+    let mut rng = rng();
+    for _ in 1..rng.random_range(2..20) {
+        let has_light = rng.random_bool(1.0 / 5.0);
+        let metallic = rng.random_bool(1.0 / 4.0);
         let _bird = commands.spawn((
             Bird,
-            Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
+            Transform::from_translation(random_translation_uniform(&mut rng, -15.0..15.0)),
             Mesh3d(bird_base_mesh.get_bird_base_mesh(&mut meshes)),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: bird_color,
-                emissive_exposure_weight: if has_light { 1.0 } else { 0.0 },
-                emissive: if has_light {
-                    light_color * 10000.0
-                } else {
-                    LinearRgba::BLACK
+            MeshMaterial3d(bird_materials.get_material(
+                &mut materials,
+                BirdMaterialEntry {
+                    base_color: rng.random(),
+                    light_color: rng.random(),
+                    has_light,
+                    metallic,
                 },
-                reflectance: 0.9,
-                metallic: if metalic { 1.0 } else { 0.0 },
-                ..Default::default()
-            })),
-            Velocity(random_translation_uniform(&mut _rng, -4.0..5.0)),
+            )),
+            Velocity(random_translation_uniform(&mut rng, -4.0..5.0)),
             ShowVelocityVector,
-            MaxSpeed(_rng.random_range(6.0..=12.0)),
-            Team(format!("{}", rng().random_range::<u8, _>(0..15))),
+            MaxSpeed(rng.random_range(6.0..=12.0)),
+            Team(format!("{}", rng.random_range::<u8, _>(0..15))),
             TransformInterpolation,
         ));
     }
@@ -108,6 +104,7 @@ pub struct BirdsPlugin;
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BirdMeshes>()
+            .init_resource::<BirdMaterials>()
             .add_systems(Startup, spawns)
             .add_systems(FixedPostUpdate, look_to::look_to.run_if(not(is_paused)))
             .add_plugins(random_vel::BirdsRandomVelPlugin)
