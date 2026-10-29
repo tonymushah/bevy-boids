@@ -4,7 +4,7 @@ use gizmos::ShowBirdsGizmoPlugin;
 use kd_tree::BirdsKdTreePlugin;
 use rand::{RngExt, rng};
 
-use alignment::BirdAlignmentPlugin;
+// use alignment::BirdAlignmentPlugin;
 use birds_number::BirdNumberTextPlugin;
 use cohesion::BirdCohesionPlugin;
 use separation::BirdSeparationPlugin;
@@ -12,7 +12,7 @@ use shi_bird_shadows::ShinyBirdShadowPlugin;
 use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
-    birds::birds_cache::BirdsCachePlugin,
+    birds::{birds_cache::BirdsCachePlugin, interactions::BirdInteractionsPlugin},
     utils::random_translation_uniform,
     velocity::{MaxSpeed, ShowVelocityVector, Velocity, is_paused},
     vision_radius::{CohesionRadius, VisionRadius},
@@ -24,6 +24,7 @@ pub mod birds_number;
 pub mod cohesion;
 pub mod cube_bound;
 mod gizmos;
+pub mod interactions;
 pub mod kd_tree;
 pub mod look_to;
 pub mod random_vel;
@@ -113,13 +114,14 @@ impl Plugin for BirdsPlugin {
             )
             .add_systems(Update, despawn_all.run_if(despawn_all_by_key_condition))
             .add_plugins(BirdSeparationPlugin)
-            .add_plugins(BirdAlignmentPlugin)
+            // .add_plugins(BirdAlignmentPlugin)
             .add_plugins(BirdCohesionPlugin)
             .add_plugins(BirdNumberTextPlugin)
             .add_plugins(BirdsKdTreePlugin)
             .add_plugins(ShowBirdsGizmoPlugin)
             .add_plugins(ShinyBirdShadowPlugin)
             .add_plugins(ToggleTeamingPlugin)
-            .add_plugins(BirdsCachePlugin);
+            .add_plugins(BirdsCachePlugin)
+            .add_plugins(BirdInteractionsPlugin);
     }
 }

@@ -4,23 +4,26 @@
 //     // time::Duration,
 // };
 
-use bevy::{color::palettes::css::PURPLE, ecs::system::SystemParam, prelude::*};
-use kiddo::dist::SquaredEuclidean;
+use bevy::{
+    // color::palettes::css::PURPLE, ecs::system::SystemParam,
+    prelude::*,
+};
+// use kiddo::dist::SquaredEuclidean;
 // use rand::{RngExt, rng};
 
-use crate::{
-    birds::{birds_cache::BirdsCache, teams::Teaming},
-    velocity::{Velocity, is_paused},
-    vision_radius::VisionRadius,
-};
+// use crate::{
+//     birds::{birds_cache::BirdsCache, teams::Teaming},
+//     velocity::{Velocity, is_paused},
+//     vision_radius::VisionRadius,
+// };
 
-use super::{
-    Bird,
-    ShowBirdsGizmo,
-    // birds_number::BirdNumber,
-    kd_tree::BirdsKdTree,
-    teams::Team,
-};
+// use super::{
+//     Bird,
+//     ShowBirdsGizmo,
+//     // birds_number::BirdNumber,
+//     kd_tree::BirdsKdTree,
+//     teams::Team,
+// };
 
 // const COHESION_TIMER: u64 = 10;
 
@@ -84,184 +87,183 @@ pub struct CohesionTimer(pub Timer);
 //     }
 // }
 
-#[derive(SystemParam)]
-pub struct CohesionParam<'w, 's> {
-    pub birds: Query<
-        'w,
-        's,
-        (
-            &'static mut Velocity,
-            &'static Transform,
-            &'static VisionRadius,
-            Entity,
-            &'static Team,
-        ),
-        With<Bird>,
-    >,
-    // pub time: Res<'w, Time>,
-    pub gizmos: Gizmos<'w, 's>,
-    // pub timer: ResMut<'w, CohesionTimer>,
-    pub kd_tree: Res<'w, BirdsKdTree>,
-    // bird_number: Res<BirdNumber>,
-    pub show_gizmo: Res<'w, ShowBirdsGizmo>,
-    pub teaming: Res<'w, Teaming>,
-    pub bird_cache_data: Res<'w, BirdsCache>,
-}
+// #[derive(SystemParam)]
+// pub struct CohesionParam<'w, 's> {
+//     pub birds: Query<
+//         'w,
+//         's,
+//         (
+//             &'static mut Velocity,
+//             &'static Transform,
+//             &'static VisionRadius,
+//             Entity,
+//             &'static Team,
+//         ),
+//         With<Bird>,
+//     >,
+//     // pub time: Res<'w, Time>,
+//     pub gizmos: Gizmos<'w, 's>,
+//     // pub timer: ResMut<'w, CohesionTimer>,
+//     pub kd_tree: Res<'w, BirdsKdTree>,
+//     // bird_number: Res<BirdNumber>,
+//     pub show_gizmo: Res<'w, ShowBirdsGizmo>,
+//     pub teaming: Res<'w, Teaming>,
+//     pub bird_cache_data: Res<'w, BirdsCache>,
+// }
 
-#[allow(clippy::type_complexity)]
-pub fn cohesion(param: CohesionParam) -> Result<(), BevyError> {
-    let CohesionParam {
-        mut birds,
-        // time,
-        mut gizmos,
-        // mut timer,
-        kd_tree,
-        show_gizmo,
-        teaming,
-        bird_cache_data,
-    } = param;
-    // if timer.tick(time.delta()).just_finished() {
-    // let mut computed: HashSet<Entity> = Default::default();
+// #[allow(clippy::type_complexity)]
+// pub fn cohesion(param: CohesionParam) -> Result<(), BevyError> {
+//     let CohesionParam {
+//         mut birds,
+//         // time,
+//         mut gizmos,
+//         // mut timer,
+//         kd_tree,
+//         show_gizmo,
+//         teaming,
+//         bird_cache_data,
+//     } = param;
+//     // if timer.tick(time.delta()).just_finished() {
+//     // let mut computed: HashSet<Entity> = Default::default();
 
-    for mut bird in &mut birds {
-        // if !computed.contains(&bird.3) {
-        //     computed.insert(bird.3);
-        // } else {
-        //     continue;
-        // }
+//     for mut bird in &mut birds {
+//         // if !computed.contains(&bird.3) {
+//         //     computed.insert(bird.3);
+//         // } else {
+//         //     continue;
+//         // }
 
-        let center = {
-            let points = { get_neighbor(&kd_tree, &teaming, &bird_cache_data, &bird)? };
-            // kd_tree
-            //     .search(BirdCohesionNeibhorHood {
-            //         limit: Some(),
-            //         target: &bird_trans,
-            //         entries: Default::default(),
-            //         vision: *bird.2,
-            //         team: bird.4,
-            //     })
-            //     .entries
-            //     .iter()
-            //     .map(|entry| entry.coord)
-            //     .collect::<Vec<_>>();
-            if !points.is_empty() {
-                points.iter().sum::<Vec3>() / points.len() as f32
-            } else {
-                Vec3::ZERO
-            }
-        };
+//         let center = {
+//             let points = { get_neighbor(&kd_tree, &teaming, &bird_cache_data, &bird)? };
+//             // kd_tree
+//             //     .search(BirdCohesionNeibhorHood {
+//             //         limit: Some(),
+//             //         target: &bird_trans,
+//             //         entries: Default::default(),
+//             //         vision: *bird.2,
+//             //         team: bird.4,
+//             //     })
+//             //     .entries
+//             //     .iter()
+//             //     .map(|entry| entry.coord)
+//             //     .collect::<Vec<_>>();
+//             if !points.is_empty() {
+//                 points.iter().sum::<Vec3>() / points.len() as f32
+//             } else {
+//                 Vec3::ZERO
+//             }
+//         };
 
-        if center == Vec3::ZERO {
-            continue;
-        }
+//         if center == Vec3::ZERO {
+//             continue;
+//         }
 
-        let pos_vec = bird.1.translation - center;
+//         let pos_vec = bird.1.translation - center;
 
-        let center_force =
-                /*(rng().random_range::<f32, _>(0.25..=3.0) as f32) */ pos_vec.normalize();
+//         let center_force =
+//                 /*(rng().random_range::<f32, _>(0.25..=3.0) as f32) */ pos_vec.normalize();
 
-        if **show_gizmo {
-            gizmos.arrow(
-                bird.1.translation,
-                bird.1.translation - center_force.normalize(),
-                PURPLE,
-            );
-        }
+//         if **show_gizmo {
+//             gizmos.arrow(
+//                 bird.1.translation,
+//                 bird.1.translation - center_force.normalize(),
+//                 PURPLE,
+//             );
+//         }
 
-        **bird.0 -= center_force;
-    }
-    // This is old code for reference
-    /*
-    while let Some(mut to_cohese) = combinaisons.fetch_next() {
-        let to_use = rng().random_range(0..(SIZE as u64)) as usize;
+//         **bird.0 -= center_force;
+//     }
+//     // This is old code for reference
+//     /*
+//     while let Some(mut to_cohese) = combinaisons.fetch_next() {
+//         let to_use = rng().random_range(0..(SIZE as u64)) as usize;
 
-        let center = {
-            let points = to_cohese
-                .iter()
-                .filter(|b| {
-                    let bird = &to_cohese[to_use];
-                    let next_one = bird.1.translation;
-                    let next_two = b.1.translation;
+//         let center = {
+//             let points = to_cohese
+//                 .iter()
+//                 .filter(|b| {
+//                     let bird = &to_cohese[to_use];
+//                     let next_one = bird.1.translation;
+//                     let next_two = b.1.translation;
 
-                    let min = bird.2.cohesion_radius.0;
-                    let max = bird.2.cohesion_radius.1;
+//                     let min = bird.2.cohesion_radius.0;
+//                     let max = bird.2.cohesion_radius.1;
 
-                    let distance = next_one.distance(next_two);
+//                     let distance = next_one.distance(next_two);
 
-                    min < distance && distance < max
-                })
-                .map(|(_, t, _, _)| t.translation)
-                .collect::<Vec<_>>();
-            points.iter().sum::<Vec3>() / points.len() as f32
-        };
-        let bird = &mut to_cohese[to_use];
+//                     min < distance && distance < max
+//                 })
+//                 .map(|(_, t, _, _)| t.translation)
+//                 .collect::<Vec<_>>();
+//             points.iter().sum::<Vec3>() / points.len() as f32
+//         };
+//         let bird = &mut to_cohese[to_use];
 
-        /*
-        let center_distance = bird.1.translation.distance(center);
+//         /*
+//         let center_distance = bird.1.translation.distance(center);
 
-        let min = bird.2.cohesion_radius.0;
-        let max = bird.2.cohesion_radius.1;
+//         let min = bird.2.cohesion_radius.0;
+//         let max = bird.2.cohesion_radius.1;
 
-        if !(min < center_distance && center_distance < max) {
-            continue;
-        } */
+//         if !(min < center_distance && center_distance < max) {
+//             continue;
+//         } */
+//         let pos_vec = bird.1.translation - center;
 
-        let pos_vec = bird.1.translation - center;
+//         let center_force =
+//             (1.0 / rng().random_range::<i32, _>(1..=10) as f32) * pos_vec.normalize();
 
-        let center_force =
-            (1.0 / rng().random_range::<i32, _>(1..=10) as f32) * pos_vec.normalize();
+//         if **show_gizmo {
+//             gizmos.arrow(
+//                 bird.1.translation,
+//                 bird.1.translation - center_force.normalize(),
+//                 PURPLE,
+//             );
+//         }
 
-        if **show_gizmo {
-            gizmos.arrow(
-                bird.1.translation,
-                bird.1.translation - center_force.normalize(),
-                PURPLE,
-            );
-        }
+//         **bird.0 -= center_force;
+//     }
+//     */
+//     // }
+//     Ok(())
+// }
 
-        **bird.0 -= center_force;
-    }
-    */
-    // }
-    Ok(())
-}
-
-fn get_neighbor(
-    kd_tree: &Res<'_, BirdsKdTree>,
-    teaming: &Res<'_, Teaming>,
-    birds_map: &Res<BirdsCache>,
-    bird: &(Mut<'_, Velocity>, &Transform, &VisionRadius, Entity, &Team),
-) -> Result<Box<[Vec3]>, BevyError> {
-    Ok(kd_tree
-        .query(&bird.1.translation.to_array())
-        // .nearest_n(
-        //     NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(|| {
-        //         BevyError::warning(anyhow::format_err!(
-        //             "Cannot transform usize to NonZero variant"
-        //         ))
-        //     })?,
-        // )
-        .within::<SquaredEuclidean<_>>(bird.2.cohesion_radius.1)
-        .with_points()
-        .execute()
-        .into_iter()
-        .filter_map(|near_bird| {
-            if near_bird.item == bird.3.index_u32() {
-                None
-            } else if bird.2.cohesion_radius.0 < near_bird.distance {
-                let near_bird_entity = Entity::from_raw_u32(near_bird.item)?;
-                let near_bird_info = birds_map.get(&near_bird_entity)?;
-                if teaming.0 && &near_bird_info.team != bird.4 {
-                    None
-                } else {
-                    Some(Vec3::from_array(near_bird.point))
-                }
-            } else {
-                None
-            }
-        })
-        .collect::<Box<[_]>>())
-}
+// fn get_neighbor(
+//     kd_tree: &Res<'_, BirdsKdTree>,
+//     teaming: &Res<'_, Teaming>,
+//     birds_map: &Res<BirdsCache>,
+//     bird: &(Mut<'_, Velocity>, &Transform, &VisionRadius, Entity, &Team),
+// ) -> Result<Box<[Vec3]>, BevyError> {
+//     Ok(kd_tree
+//         .query(&bird.1.translation.to_array())
+//         // .nearest_n(
+//         //     NonZeroUsize::new(rng().random_range::<u64, _>(3..20) as usize).ok_or_else(|| {
+//         //         BevyError::warning(anyhow::format_err!(
+//         //             "Cannot transform usize to NonZero variant"
+//         //         ))
+//         //     })?,
+//         // )
+//         .within::<SquaredEuclidean<_>>(bird.2.cohesion_radius.1)
+//         .with_points()
+//         .execute()
+//         .into_iter()
+//         .filter_map(|near_bird| {
+//             if near_bird.item == bird.3.index_u32() {
+//                 None
+//             } else if bird.2.cohesion_radius.0 < near_bird.distance {
+//                 let near_bird_entity = Entity::from_raw_u32(near_bird.item)?;
+//                 let near_bird_info = birds_map.get(&near_bird_entity)?;
+//                 if teaming.0 && &near_bird_info.team != bird.4 {
+//                     None
+//                 } else {
+//                     Some(Vec3::from_array(near_bird.point))
+//                 }
+//             } else {
+//                 None
+//             }
+//         })
+//         .collect::<Box<[_]>>())
+// }
 
 fn toogle_cohesion(mut res: ResMut<IsCohersionActive>) {
     **res = !**res;
@@ -324,10 +326,11 @@ pub struct BirdCohesionPlugin;
 
 impl Plugin for BirdCohesionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            FixedUpdate,
-            cohesion.run_if(is_cohesion_active.and_then(not(is_paused))),
-        )
+        app
+        //     .add_systems(
+        //     FixedUpdate,
+        //     cohesion.run_if(is_cohesion_active.and_then(not(is_paused))),
+        // )
         .add_systems(
             Update,
             (toogle_cohesion,
