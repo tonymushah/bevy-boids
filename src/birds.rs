@@ -12,7 +12,10 @@ use shi_bird_shadows::ShinyBirdShadowPlugin;
 use teams::{Team, ToggleTeamingPlugin};
 
 use crate::{
-    birds::{birds_cache::BirdsCachePlugin, interactions::BirdInteractionsPlugin},
+    birds::{
+        birds_cache::BirdsCachePlugin, interactions::BirdInteractionsPlugin,
+        mesh_material_registry::BirdMeshes,
+    },
     utils::random_translation_uniform,
     velocity::{MaxSpeed, ShowVelocityVector, Velocity, is_paused},
     vision_radius::{CohesionRadius, VisionRadius},
@@ -27,6 +30,7 @@ mod gizmos;
 pub mod interactions;
 pub mod kd_tree;
 pub mod look_to;
+pub mod mesh_material_registry;
 pub mod random_vel;
 pub mod separation;
 pub mod shape;
@@ -51,6 +55,7 @@ fn spawns(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut bird_base_mesh: ResMut<BirdMeshes>,
 ) {
     let bird_color: Color = LinearRgba::rgb(1.0, 0.5, 0.3).into();
 
@@ -62,7 +67,7 @@ fn spawns(
         let _bird = commands.spawn((
             Bird,
             Transform::from_translation(random_translation_uniform(&mut _rng, -15.0..15.0)),
-            Mesh3d(meshes.add(shape::bird_meshes())),
+            Mesh3d(bird_base_mesh.get_bird_base_mesh(&mut meshes)),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: bird_color,
                 emissive_exposure_weight: if has_light { 1.0 } else { 0.0 },
@@ -102,7 +107,8 @@ pub struct BirdsPlugin;
 
 impl Plugin for BirdsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawns)
+        app.init_resource::<BirdMeshes>()
+            .add_systems(Startup, spawns)
             .add_systems(FixedPostUpdate, look_to::look_to.run_if(not(is_paused)))
             .add_plugins(random_vel::BirdsRandomVelPlugin)
             .add_plugins(cube_bound::BirdCubeBoundPlugin(Cuboid::new(
