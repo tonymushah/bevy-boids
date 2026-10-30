@@ -43,8 +43,8 @@ pub use gizmos::ShowBirdsGizmo;
 fn default_vision_radius() -> VisionRadius {
     VisionRadius {
         min_distance: 3.0,
-        neighboor_radius: 40.0,
-        cohesion_radius: CohesionRadius(3.0, 50.0),
+        neighboor_radius: 70.0,
+        cohesion_radius: CohesionRadius(3.0, 100.0),
     }
 }
 
@@ -61,25 +61,33 @@ fn spawns(
 ) {
     let mut rng = rng();
     for _ in 1..rng.random_range(2..20) {
-        let has_light = rng.random_bool(1.0 / 5.0);
-        let metallic = rng.random_bool(1.0 / 4.0);
+        let team = Team(format!("{}", rng.random_range::<u8, _>(0..15)));
         let _bird = commands.spawn((
             Bird,
             Transform::from_translation(random_translation_uniform(&mut rng, -15.0..15.0)),
             Mesh3d(bird_base_mesh.get_bird_base_mesh(&mut meshes)),
-            MeshMaterial3d(bird_materials.get_material(
-                &mut materials,
-                BirdMaterialEntry {
-                    base_color: rng.random(),
-                    light_color: rng.random(),
-                    has_light,
-                    metallic,
-                },
-            )),
+            MeshMaterial3d(
+                bird_materials
+                    .get_team_material(&mut materials, team.clone())
+                    .unwrap_or_else(|| {
+                        let has_light = rng.random_bool(1.0 / 5.0);
+                        let metallic = rng.random_bool(1.0 / 4.0);
+                        bird_materials.set_team_material(
+                            &mut materials,
+                            team.clone(),
+                            BirdMaterialEntry {
+                                base_color: rng.random(),
+                                light_color: rng.random(),
+                                has_light,
+                                metallic,
+                            },
+                        )
+                    }),
+            ),
             Velocity(random_translation_uniform(&mut rng, -4.0..5.0)),
             ShowVelocityVector,
             MaxSpeed(rng.random_range(6.0..=12.0)),
-            Team(format!("{}", rng.random_range::<u8, _>(0..15))),
+            team,
             TransformInterpolation,
         ));
     }

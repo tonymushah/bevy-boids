@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Component, Deref, DerefMut, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Component, Deref, DerefMut, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Team(pub String);
 
 #[derive(Debug, Resource, Deref, DerefMut, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

@@ -8,7 +8,7 @@ use bevy::{
     pbr::StandardMaterial,
 };
 
-use crate::birds::shape::bird_meshes;
+use crate::birds::{shape::bird_meshes, teams::Team};
 
 #[derive(Debug, Resource, Default)]
 pub struct BirdMeshes(Option<Handle<Mesh>>);
@@ -30,6 +30,7 @@ pub struct BirdMaterialEntry {
 #[derive(Debug, Resource, Default)]
 pub struct BirdMaterials {
     base_materials: HashMap<BirdMaterialEntry, Handle<StandardMaterial>>,
+    team_materials: HashMap<Team, BirdMaterialEntry>,
 }
 
 impl BirdMaterials {
@@ -56,5 +57,26 @@ impl BirdMaterials {
                 })
             })
             .clone()
+    }
+
+    pub fn get_team_material(
+        &mut self,
+        materials: &mut Assets<StandardMaterial>,
+        team: Team,
+    ) -> Option<Handle<StandardMaterial>> {
+        Some(
+            self.get_material(materials, self.team_materials.get(&team)?.clone())
+                .clone(),
+        )
+    }
+
+    pub fn set_team_material(
+        &mut self,
+        materials: &mut Assets<StandardMaterial>,
+        team: Team,
+        entry: BirdMaterialEntry,
+    ) -> Handle<StandardMaterial> {
+        self.team_materials.insert(team, entry.clone());
+        self.get_material(materials, entry)
     }
 }
