@@ -1,15 +1,8 @@
 use bevy::prelude::*;
-use birds::BirdsPlugin;
-use camera::MainCameraPluginGroup;
-use env::EnvironmentPlugin;
-use velocity::VelocityPlugin;
-
-pub mod birds;
-pub mod camera;
-pub mod env;
-pub mod utils;
-pub mod velocity;
-pub mod vision_radius;
+use bevy_boids::birds::BirdsPlugin;
+use bevy_boids::camera::MainCameraPluginGroup;
+use bevy_boids::env::EnvironmentPlugin;
+use bevy_boids::velocity::VelocityPlugin;
 
 fn main() {
     App::new()
